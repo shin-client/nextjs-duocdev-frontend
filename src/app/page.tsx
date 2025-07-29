@@ -1,14 +1,11 @@
-import Image from "next/image";
+import ButtonRedirect from "./components/ButtonRedirect";
 
 export default function Home() {
+  console.log("home page");
   return (
-    <div className="grid min-h-screen grid-rows-[20px_1fr_20px] items-center justify-items-center gap-16 p-8 pb-20 sm:p-20">
-      <Image
-        src={"https://4kwallpapers.com/images/walls/thumbs_3t/10025.jpg"}
-        alt="woman picture"
-        width={500}
-        height={500}
-      />
+    <div>
+      <ButtonRedirect url="/login" label="Login" />
+      <ButtonRedirect url="/register" label="Register" />
     </div>
   );
 }
