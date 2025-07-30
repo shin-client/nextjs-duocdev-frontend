@@ -3,6 +3,7 @@ import { Roboto } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import Header from "@/components/header";
+import { Toaster } from "sonner";
 
 const roboto = Roboto({
   display: "swap",
@@ -23,6 +24,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head />
       <body className={`${roboto.className} antialiased`}>
+        <Toaster position="top-center" richColors />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

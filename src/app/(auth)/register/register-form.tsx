@@ -12,11 +12,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import envConfig from "@/config";
-import { FormSchema, FormValue } from "@/schemaValidations/auth.schema";
+import { RegisterBody, RegisterBodyType } from "@/schemaValidations/auth.schema";
 
 const RegisterForm = () => {
-  const form = useForm<FormValue>({
-    resolver: zodResolver(FormSchema),
+  const form = useForm<RegisterBodyType>({
+    resolver: zodResolver(RegisterBody),
     defaultValues: {
       name: "",
       email: "",
@@ -25,7 +25,7 @@ const RegisterForm = () => {
     },
   });
 
-  const onSubmit = (values: FormValue) => {
+  const onSubmit = (values: RegisterBodyType) => {
     // Fetch your API
     console.log(envConfig.NEXT_PUBLIC_API_ENDPOINT);
     console.log(values);
@@ -64,7 +64,7 @@ const RegisterForm = () => {
           <FormField
             key={field.name}
             control={form.control}
-            name={field.name as keyof FormValue}
+            name={field.name as keyof RegisterBodyType}
             render={({ field: formField }) => (
               <FormItem>
                 <FormLabel>{field.label}</FormLabel>
