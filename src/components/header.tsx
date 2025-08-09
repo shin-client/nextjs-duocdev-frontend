@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ModeToggle } from "./mode-toggle";
+import { DarkModeToggle } from "./dark-mode-toggle";
 
 const Header = () => {
   return (
@@ -12,7 +12,7 @@ const Header = () => {
           <Link href={"/register"}>Đăng ký</Link>
         </li>
       </ul>
-      <ModeToggle />
+      <DarkModeToggle />
     </div>
   );
 };
