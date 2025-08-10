@@ -16,8 +16,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useLoginMutation } from "@/queries/useAuth";
 import { toast } from "sonner";
 import { handleErrorApi } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
+  const router = useRouter();
   const loginMutation = useLoginMutation();
   const form = useForm<LoginBodyType>({
     resolver: zodResolver(LoginBody),
@@ -32,6 +34,7 @@ export default function LoginForm() {
     try {
       const result = await loginMutation.mutateAsync(data);
       toast.success(result.payload.message);
+      router.push("/manage/dashboard");
     } catch (error) {
       handleErrorApi({ error, setError: form.setError });
     }
@@ -50,8 +53,8 @@ export default function LoginForm() {
           <form
             className="w-full max-w-[600px] flex-shrink-0 space-y-2"
             noValidate
-            onSubmit={form.handleSubmit(onSubmit, err => {
-              console.warn(err)
+            onSubmit={form.handleSubmit(onSubmit, (err) => {
+              console.warn(err);
             })}
           >
             <div className="grid gap-4">
