@@ -13,10 +13,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useRef, useState } from "react";
-import { useAccountProfile } from "@/queries/useAccount";
+import { useAccountMe, useUpdateMeMutation } from "@/queries/useAccount";
+import { useUploadMediaMutation } from "@/queries/useMedia";
+import { toast } from "sonner";
+import { handleErrorApi } from "@/lib/utils";
 
 export default function UpdateProfileForm() {
-  const { data, refetch } = useAccountProfile();
+  const { data, refetch } = useAccountMe();
+  const updateMeMutation = useUpdateMeMutation();
+  const uploadMediaMutation = useUploadMediaMutation();
   const [file, setFile] = useState<File | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const form = useForm<UpdateMeBodyType>({
@@ -38,11 +43,34 @@ export default function UpdateProfileForm() {
     refetch();
   }, [data, form, refetch]);
 
-  const previewAvatar = () => {
-    if (file) {
-      return URL.createObjectURL(file);
+  const previewAvatar = file ? URL.createObjectURL(file) : avatar;
+
+  const reset = () => {
+    form.reset();
+    setFile(null);
+  };
+
+  const onSubmit = async (values: UpdateMeBodyType) => {
+    if (updateMeMutation.isPending) return;
+    try {
+      let body = values;
+      if (file) {
+        const formData = new FormData();
+        formData.append("file", file);
+        const uploadImageResult =
+          await uploadMediaMutation.mutateAsync(formData);
+        const imageUrl = uploadImageResult.payload.data;
+        body = {
+          ...values,
+          avatar: imageUrl,
+        };
+      }
+      const result = await updateMeMutation.mutateAsync(body);
+      toast.success(result.payload.message);
+      refetch();
+    } catch (error) {
+      handleErrorApi({ error, setError: form.setError });
     }
-    return avatar;
   };
 
   return (
@@ -50,6 +78,7 @@ export default function UpdateProfileForm() {
       <form
         noValidate
         className="grid auto-rows-max items-start gap-4 md:gap-8"
+        onSubmit={form.handleSubmit(onSubmit)}
       >
         <Card x-chunk="dashboard-07-chunk-0">
           <CardHeader>
@@ -64,8 +93,8 @@ export default function UpdateProfileForm() {
                   <FormItem>
                     <div className="flex items-start justify-start gap-2">
                       <Avatar className="aspect-square h-[100px] w-[100px] rounded-md object-cover">
-                        <AvatarImage src={previewAvatar()} />
-                        <AvatarFallback className="rounded-none">
+                        <AvatarImage src={previewAvatar} />
+                        <AvatarFallback className="rounded-none text-center">
                           {name}
                         </AvatarFallback>
                       </Avatar>
@@ -82,9 +111,10 @@ export default function UpdateProfileForm() {
                         }}
                       />
                       <button
-                        className="flex aspect-square w-[100px] items-center justify-center rounded-md border border-dashed"
+                        className={`flex aspect-square w-[100px] items-center justify-center rounded-md border border-dashed${!data?.payload.data.avatar ? " cursor-not-allowed" : ""}`}
                         type="button"
                         onClick={() => avatarInputRef.current?.click()}
+                        disabled={!data?.payload.data.avatar}
                       >
                         <Upload className="text-muted-foreground h-4 w-4" />
                         <span className="sr-only">Upload</span>
@@ -106,6 +136,7 @@ export default function UpdateProfileForm() {
                         type="text"
                         className="w-full"
                         {...field}
+                        disabled={!data?.payload.data.name}
                       />
                       <FormMessage />
                     </div>
@@ -114,7 +145,12 @@ export default function UpdateProfileForm() {
               />
 
               <div className="flex items-center gap-2 md:ml-auto">
-                <Button variant="outline" size="sm" type="reset">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  type="reset"
+                  onClick={reset}
+                >
                   Hủy
                 </Button>
                 <Button size="sm" type="submit">
