@@ -10,8 +10,12 @@ import {
 } from "@/schemaValidations/account.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { useChangePasswordMutation } from "@/queries/useAccount";
+import { toast } from "sonner";
+import { handleErrorApi } from "@/lib/utils";
 
 export default function ChangePasswordForm() {
+  const changePasswordMutation = useChangePasswordMutation();
   const form = useForm<ChangePasswordBodyType>({
     resolver: zodResolver(ChangePasswordBody),
     defaultValues: {
@@ -21,16 +25,28 @@ export default function ChangePasswordForm() {
     },
   });
 
+  const onSubmit = async (data: ChangePasswordBodyType) => {
+    if (changePasswordMutation.isPending) return;
+    try {
+      const result = await changePasswordMutation.mutateAsync(data);
+      toast.success(result.payload.message);
+      form.reset();
+    } catch (error) {
+      handleErrorApi({ error, setError: form.setError });
+    }
+  };
+
   return (
     <Form {...form}>
       <form
         noValidate
         className="grid auto-rows-max items-start gap-4 md:gap-8"
+        onSubmit={form.handleSubmit(onSubmit)}
+        onReset={() => form.reset()}
       >
         <Card className="overflow-hidden" x-chunk="dashboard-07-chunk-4">
           <CardHeader>
             <CardTitle>Đổi mật khẩu</CardTitle>
-            {/* <CardDescription>Lipsum dolor sit amet, consectetur adipiscing elit</CardDescription> */}
           </CardHeader>
           <CardContent>
             <div className="grid gap-6">
@@ -91,10 +107,12 @@ export default function ChangePasswordForm() {
                 )}
               />
               <div className="flex items-center gap-2 md:ml-auto">
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" type="reset">
                   Hủy
                 </Button>
-                <Button size="sm">Lưu thông tin</Button>
+                <Button size="sm" type="submit">
+                  Lưu thông tin
+                </Button>
               </div>
             </div>
           </CardContent>
