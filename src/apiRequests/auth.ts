@@ -3,6 +3,8 @@ import {
   LoginBodyType,
   LoginResType,
   LogoutBodyType,
+  RefreshTokenBodyType,
+  RefreshTokenResType,
 } from "@/schemaValidations/auth.schema";
 import { MessageResType } from "@/schemaValidations/common.schema";
 
@@ -22,6 +24,12 @@ const authApiRequest = {
     ),
   logout: () =>
     http.post<MessageResType>("/api/auth/logout", null, { baseUrl: "" }),
+  sRefreshToken: (body: RefreshTokenBodyType) =>
+    http.post<RefreshTokenResType>("/auth/refresh-token", body),
+  refreshToken: () =>
+    http.post<RefreshTokenResType>("/auth/refresh-token", null, {
+      baseUrl: "",
+    }),
 };
 
 export default authApiRequest;
