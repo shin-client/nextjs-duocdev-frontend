@@ -24,7 +24,7 @@ const RefreshTokenPage = () => {
           router.push(redirectPathname || "/");
         },
       });
-    }
+    } else router.push("/");
   }, [mutateAsync, redirectPathname, refreshTokenFormUrl, router]);
 
   return (

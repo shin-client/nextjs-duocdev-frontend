@@ -10,7 +10,9 @@ export function middleware(request: NextRequest) {
 
   // Chưa login thì không cho vào privatePaths
   if (privatePaths.some((path) => pathname.startsWith(path)) && !refreshToken) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    const url = new URL("/login", request.url);
+    url.searchParams.set("clearTokens", "true")
+    return NextResponse.redirect(url);
   }
 
   // Login rồi thì không cho vào unAuthPaths
@@ -27,7 +29,6 @@ export function middleware(request: NextRequest) {
     const url = new URL("/refresh-token", request.url);
     url.searchParams.set("refreshToken", refreshToken);
     url.searchParams.set("redirect", pathname);
-    console.log("đây là url", url);
     return NextResponse.redirect(url);
   }
 

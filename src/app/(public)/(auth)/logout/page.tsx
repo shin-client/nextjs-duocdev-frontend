@@ -36,12 +36,12 @@ const Logout = () => {
       hasExecuted.current = true;
       mutateAsync().then(() => router.push("/login"));
     } else {
-      router.push("/login");
+      router.push("/");
     }
   }, [accessTokenFormUrl, mutateAsync, refreshTokenFormUrl, router]);
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
+    <div className="flex items-center justify-center">
       <div>Đang đăng xuất...</div>
     </div>
   );
