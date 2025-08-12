@@ -1,13 +1,6 @@
 "use client";
 
-import authApiRequest from "@/apiRequests/auth";
-import {
-  getAccessTokenFromLocalStorage,
-  getRefreshTokenFromLocalStorage,
-  setAccessTokenToLocalStorage,
-  setRefreshTokenToLocalStorage,
-} from "@/lib/utils";
-import { decode } from "jsonwebtoken";
+import { checkAndRefreshToken } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
@@ -22,39 +15,7 @@ const RefreshToken = () => {
     let interval: any = null;
     const TIMEOUT = 1000;
 
-    const checkAndRefreshToken = async () => {
-      const accessToken = getAccessTokenFromLocalStorage();
-      const refreshToken = getRefreshTokenFromLocalStorage();
-
-      if (!accessToken || !refreshToken) return;
-
-      const decodedAccessToken = decode(accessToken) as {
-        exp: number;
-        iat: number;
-      };
-      const decodedRefreshToken = decode(refreshToken) as {
-        exp: number;
-        iat: number;
-      };
-      const now = Math.round(new Date().getTime() / 1000);
-
-      if (decodedRefreshToken.exp <= now) return;
-
-      if (
-        decodedAccessToken.exp - now <
-        (decodedAccessToken.exp - decodedAccessToken.iat) / 3
-      ) {
-        try {
-          const res = await authApiRequest.refreshToken();
-          setAccessTokenToLocalStorage(res.payload.data.accessToken);
-          setRefreshTokenToLocalStorage(res.payload.data.refreshToken);
-        } catch {
-          clearInterval(interval);
-        }
-      }
-    };
-
-    checkAndRefreshToken();
+    checkAndRefreshToken({ onError: () => clearInterval(interval) });
 
     interval = setInterval(checkAndRefreshToken, TIMEOUT);
     return () => clearInterval(interval);
