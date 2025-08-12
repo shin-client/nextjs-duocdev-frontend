@@ -70,37 +70,41 @@ export const checkAndRefreshToken = async (param?: {
   onError?: () => void;
   onSuccess?: () => void;
 }) => {
-  const accessToken = getAccessTokenFromLocalStorage();
-  const refreshToken = getRefreshTokenFromLocalStorage();
+  try {
+    const accessToken = getAccessTokenFromLocalStorage();
+    const refreshToken = getRefreshTokenFromLocalStorage();
 
-  if (!accessToken || !refreshToken) return;
+    if (!accessToken || !refreshToken) return;
 
-  const decodedAccessToken = decode(accessToken) as {
-    exp: number;
-    iat: number;
-  };
-  const decodedRefreshToken = decode(refreshToken) as {
-    exp: number;
-    iat: number;
-  };
-  const now = new Date().getTime() / 1000 - 1;
+    const decodedAccessToken = decode(accessToken) as {
+      exp: number;
+      iat: number;
+    } | null;
+    const decodedRefreshToken = decode(refreshToken) as { exp: number } | null;
 
-  if (decodedRefreshToken.exp <= now) {
-    removeTokensFromLocalStorage();
-    return param?.onError?.();
-  }
+    if (!decodedAccessToken || !decodedRefreshToken) {
+      removeTokensFromLocalStorage();
+      return param?.onError?.();
+    }
 
-  if (
-    decodedAccessToken.exp - now <
-    (decodedAccessToken.exp - decodedAccessToken.iat) / 3
-  ) {
-    try {
+    const now = Date.now() / 1000 - 1;
+
+    if (decodedRefreshToken.exp <= now) {
+      removeTokensFromLocalStorage();
+      return param?.onError?.();
+    }
+
+    if (
+      decodedAccessToken.exp - now <
+      (decodedAccessToken.exp - decodedAccessToken.iat) / 3
+    ) {
       const res = await authApiRequest.refreshToken();
       setAccessTokenToLocalStorage(res.payload.data.accessToken);
       setRefreshTokenToLocalStorage(res.payload.data.refreshToken);
       param?.onSuccess?.();
-    } catch {
-      param?.onError?.();
     }
+  } catch {
+    removeTokensFromLocalStorage();
+    param?.onError?.();
   }
 };
