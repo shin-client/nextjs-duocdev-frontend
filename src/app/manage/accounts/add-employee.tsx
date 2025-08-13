@@ -63,7 +63,7 @@ export default function AddEmployee() {
       }
       const result = await addAccountMutation.mutateAsync(body);
       toast.success(result.payload.message);
-      setOpen(false);
+      handleOpenChange(false);
     } catch (error) {
       handleErrorApi({ error, setError: form.setError });
     }
