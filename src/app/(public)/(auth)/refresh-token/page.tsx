@@ -1,18 +1,17 @@
 "use client";
+import LoadingFallback from "@/components/loading-fallback";
 import {
   checkAndRefreshToken,
   getRefreshTokenFromLocalStorage,
 } from "@/lib/utils";
-import { useLogoutMutation } from "@/queries/useAuth";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 
-const RefreshTokenPage = () => {
+const RefreshToken = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const refreshTokenFormUrl = searchParams.get("refreshToken");
   const redirectPathname = searchParams.get("redirect");
-  const { mutateAsync } = useLogoutMutation();
 
   useEffect(() => {
     if (
@@ -25,12 +24,24 @@ const RefreshTokenPage = () => {
         },
       });
     } else router.push("/");
-  }, [mutateAsync, redirectPathname, refreshTokenFormUrl, router]);
+  }, [redirectPathname, refreshTokenFormUrl, router]);
 
   return (
     <div className="flex items-center justify-center">
-      <div>Đang đăng xuất...</div>
+      <div>Đang làm mới token...</div>
     </div>
+  );
+};
+
+const RefreshTokenPage = () => {
+  return (
+    <Suspense
+      fallback={
+        <LoadingFallback />
+      }
+    >
+      <RefreshToken />
+    </Suspense>
   );
 };
 export default RefreshTokenPage;
