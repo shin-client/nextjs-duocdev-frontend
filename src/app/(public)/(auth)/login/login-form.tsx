@@ -39,7 +39,6 @@ export default function LoginForm() {
   }, [clearTokens, setIsAuth]);
 
   const onSubmit = async (data: LoginBodyType) => {
-    if (loginMutation.isPending) return;
     try {
       const result = await loginMutation.mutateAsync(data);
       setIsAuth(true);
@@ -107,7 +106,7 @@ export default function LoginForm() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full" isLoading={loginMutation.isPending}>
                 Đăng nhập
               </Button>
               <Button variant="outline" className="w-full" type="button">

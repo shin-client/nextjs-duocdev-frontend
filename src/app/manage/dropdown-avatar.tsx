@@ -24,7 +24,6 @@ export default function DropdownAvatar() {
   const router = useRouter();
 
   const logout = async () => {
-    if (logoutMutation.isPending) return;
     try {
       await logoutMutation.mutateAsync();
       setIsAuth(false);
@@ -63,7 +62,11 @@ export default function DropdownAvatar() {
         </DropdownMenuItem>
         <DropdownMenuItem className="cursor-pointer">Hỗ trợ</DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={logout} className="cursor-pointer">
+        <DropdownMenuItem
+          onClick={logout}
+          className="cursor-pointer"
+          disabled={logoutMutation.isPending}
+        >
           Đăng xuất
         </DropdownMenuItem>
       </DropdownMenuContent>

@@ -17,15 +17,21 @@ import {
 } from "@/schemaValidations/account.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusCircle, Upload } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAddAccountMutation } from "@/queries/useAccount";
+import { toast } from "sonner";
+import { useUploadMediaMutation } from "@/queries/useMedia";
+import { handleErrorApi } from "@/lib/utils";
 
 export default function AddEmployee() {
   const [file, setFile] = useState<File | null>(null);
   const [open, setOpen] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
+  const addAccountMutation = useAddAccountMutation();
+  const uploadMediaMutation = useUploadMediaMutation();
   const form = useForm<CreateEmployeeAccountBodyType>({
     resolver: zodResolver(CreateEmployeeAccountBody),
     defaultValues: {
@@ -36,17 +42,47 @@ export default function AddEmployee() {
       confirmPassword: "",
     },
   });
+
   const avatar = form.watch("avatar");
   const name = form.watch("name");
-  const previewAvatarFromFile = useMemo(() => {
-    if (file) {
-      return URL.createObjectURL(file);
+  const previewAvatarFromFile = file ? URL.createObjectURL(file) : avatar;
+
+  const onSubmit = async (values: CreateEmployeeAccountBodyType) => {
+    try {
+      let body = values;
+      if (file) {
+        const formData = new FormData();
+        formData.append("file", file);
+        const uploadImageResult =
+          await uploadMediaMutation.mutateAsync(formData);
+        const imageUrl = uploadImageResult.payload.data;
+        body = {
+          ...values,
+          avatar: imageUrl,
+        };
+      }
+      const result = await addAccountMutation.mutateAsync(body);
+      toast.success(result.payload.message);
+      setOpen(false);
+    } catch (error) {
+      handleErrorApi({ error, setError: form.setError });
     }
-    return avatar;
-  }, [file, avatar]);
+  };
+
+  const reset = () => {
+    form.reset();
+    setFile(null);
+  };
+
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      reset();
+    }
+  };
 
   return (
-    <Dialog onOpenChange={setOpen} open={open}>
+    <Dialog onOpenChange={handleOpenChange} open={open}>
       <DialogTrigger asChild>
         <Button size="sm" className="h-7 gap-1">
           <PlusCircle className="h-3.5 w-3.5" />
@@ -67,17 +103,19 @@ export default function AddEmployee() {
             noValidate
             className="grid auto-rows-max items-start gap-4 md:gap-8"
             id="add-employee-form"
+            onSubmit={form.handleSubmit(onSubmit)}
+            onReset={reset}
           >
             <div className="grid gap-4 py-4">
               <FormField
                 control={form.control}
                 name="avatar"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
                     <div className="flex items-start justify-start gap-2">
                       <Avatar className="aspect-square h-[100px] w-[100px] rounded-md object-cover">
                         <AvatarImage src={previewAvatarFromFile} />
-                        <AvatarFallback className="rounded-none">
+                        <AvatarFallback className="rounded-none text-center">
                           {name || "Avatar"}
                         </AvatarFallback>
                       </Avatar>
@@ -87,12 +125,7 @@ export default function AddEmployee() {
                         ref={avatarInputRef}
                         onChange={(e) => {
                           const file = e.target.files?.[0];
-                          if (file) {
-                            setFile(file);
-                            field.onChange(
-                              "http://localhost:3000/" + file.name,
-                            );
-                          }
+                          if (file) setFile(file);
                         }}
                         className="hidden"
                       />
@@ -183,7 +216,11 @@ export default function AddEmployee() {
           </form>
         </Form>
         <DialogFooter>
-          <Button type="submit" form="add-employee-form">
+          <Button
+            type="submit"
+            form="add-employee-form"
+            isLoading={addAccountMutation.isPending}
+          >
             Thêm
           </Button>
         </DialogFooter>

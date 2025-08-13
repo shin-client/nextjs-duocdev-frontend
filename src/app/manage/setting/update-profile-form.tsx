@@ -34,6 +34,7 @@ export default function UpdateProfileForm() {
 
   const avatar = form.watch("avatar");
   const name = form.watch("name");
+  const previewAvatar = file ? URL.createObjectURL(file) : avatar;
 
   useEffect(() => {
     if (data) {
@@ -43,15 +44,12 @@ export default function UpdateProfileForm() {
     refetch();
   }, [data, form, refetch]);
 
-  const previewAvatar = file ? URL.createObjectURL(file) : avatar;
-
   const reset = () => {
     form.reset();
     setFile(null);
   };
 
   const onSubmit = async (values: UpdateMeBodyType) => {
-    if (updateMeMutation.isPending) return;
     try {
       let body = values;
       if (file) {
@@ -111,7 +109,7 @@ export default function UpdateProfileForm() {
                         }}
                       />
                       <button
-                        className={`flex aspect-square w-[100px] items-center justify-center rounded-md border border-dashed${!data?.payload.data.avatar ? " cursor-not-allowed" : ""}`}
+                        className={`flex aspect-square w-[100px] items-center justify-center rounded-md border border-dashed${!data?.payload.data.avatar ? "cursor-not-allowed" : ""}`}
                         type="button"
                         onClick={() => avatarInputRef.current?.click()}
                         disabled={!data?.payload.data.avatar}
@@ -153,7 +151,11 @@ export default function UpdateProfileForm() {
                 >
                   Hủy
                 </Button>
-                <Button size="sm" type="submit">
+                <Button
+                  size="sm"
+                  type="submit"
+                  isLoading={updateMeMutation.isPending}
+                >
                   Lưu thông tin
                 </Button>
               </div>

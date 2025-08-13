@@ -26,7 +26,6 @@ export default function ChangePasswordForm() {
   });
 
   const onSubmit = async (data: ChangePasswordBodyType) => {
-    if (changePasswordMutation.isPending) return;
     try {
       const result = await changePasswordMutation.mutateAsync(data);
       toast.success(result.payload.message);
@@ -110,7 +109,7 @@ export default function ChangePasswordForm() {
                 <Button variant="outline" size="sm" type="reset">
                   Hủy
                 </Button>
-                <Button size="sm" type="submit">
+                <Button size="sm" type="submit" isLoading={changePasswordMutation.isPending}>
                   Lưu thông tin
                 </Button>
               </div>
