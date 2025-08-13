@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { CaretSortIcon, DotsHorizontalIcon } from "@radix-ui/react-icons";
@@ -54,6 +53,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useSearchParams } from "next/navigation";
 import AutoPagination from "@/components/auto-pagination";
+import { useGetAccountList } from "@/queries/useAccount";
 
 type AccountItem = AccountListResType["data"][0];
 
@@ -79,8 +79,8 @@ export const columns: ColumnDef<AccountType>[] = [
     header: "Avatar",
     cell: ({ row }) => (
       <div>
-        <Avatar className="aspect-square h-[100px] w-[100px] rounded-md object-cover">
-          <AvatarImage src={row.getValue("avatar")} />
+        <Avatar className="aspect-square h-[100px] w-[100px] rounded-md">
+          <AvatarImage src={row.getValue("avatar")} className="object-cover" />
           <AvatarFallback className="rounded-none">
             {row.original.name}
           </AvatarFallback>
@@ -106,7 +106,7 @@ export const columns: ColumnDef<AccountType>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>,
+    cell: ({ row }) => <div>{row.getValue("email")}</div>,
   },
   {
     id: "actions",
@@ -178,18 +178,19 @@ function AlertDialogDeleteAccount({
     </AlertDialog>
   );
 }
-// Số lượng item trên 1 trang
+
 const PAGE_SIZE = 10;
+
 export default function AccountTable() {
   const searchParam = useSearchParams();
   const page = searchParam.get("page") ? Number(searchParam.get("page")) : 1;
   const pageIndex = page - 1;
-  // const params = Object.fromEntries(searchParam.entries())
   const [employeeIdEdit, setEmployeeIdEdit] = useState<number | undefined>();
   const [employeeDelete, setEmployeeDelete] = useState<AccountItem | null>(
     null,
   );
-  const data: any[] = [];
+  const accountListQuery = useGetAccountList();
+  const data = accountListQuery.data?.payload.data ?? [];
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -228,8 +229,28 @@ export default function AccountTable() {
     });
   }, [table, pageIndex]);
 
+  if (accountListQuery.isLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600"></div>
+      </div>
+    );
+  }
+
+  if (data.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center space-y-4">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold">Chưa có nhân viên nào</h3>
+          <p className="text-muted-foreground">Thêm nhân viên đầu tiên</p>
+        </div>
+        <AddEmployee />
+      </div>
+    );
+  }
+
   return (
-    <AccountTableContext.Provider
+    <AccountTableContext
       value={{
         employeeIdEdit,
         setEmployeeIdEdit,
@@ -299,11 +320,13 @@ export default function AccountTable() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    No results.
+                  <TableCell colSpan={columns.length}>
+                    <div className="py-4 text-center">
+                      <p>Không tìm thấy kết quả với bộ lọc hiện tại</p>
+                      <Button onClick={() => table.resetColumnFilters()}>
+                        Xóa bộ lọc
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               )}
@@ -325,6 +348,6 @@ export default function AccountTable() {
           </div>
         </div>
       </div>
-    </AccountTableContext.Provider>
+    </AccountTableContext>
   );
 }

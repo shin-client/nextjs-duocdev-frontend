@@ -1,5 +1,6 @@
 import http from "@/lib/http";
 import {
+  AccountListResType,
   AccountResType,
   ChangePasswordBodyType,
   CreateEmployeeAccountBodyType,
@@ -21,7 +22,7 @@ const accountApiRequest = {
     http.put<AccountResType>(`${prefix}/me`, body),
   changePassword: (body: ChangePasswordBodyType) =>
     http.put<AccountResType>(`${prefix}/change-password`, body),
-  list: () => http.get<AccountResType>(`${prefix}`),
+  list: () => http.get<AccountListResType>(`${prefix}`),
   addEmployee: (body: CreateEmployeeAccountBodyType) =>
     http.post<AccountResType>(prefix, body),
   updateEmployee: (id: number, body: UpdateEmployeeAccountBodyType) =>
