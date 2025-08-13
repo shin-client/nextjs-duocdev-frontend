@@ -30,14 +30,7 @@ export default function Home() {
             .fill(0)
             .map((_, index) => (
               <div className="w flex gap-4" key={index}>
-                <div className="flex-shrink-0">
-                  {/* <Image
-                    src="https://ik.imagekit.io/freeflo/production/6b91c700-92c4-4601-8e96-37d84ac3c28c.png?tr=w-2048,q-75&alt=media&pr-true"
-                    width={200}
-                    height={200}
-                    className="h-[150px] w-[150px] rounded-md object-cover"
-                    alt="test"
-                  /> */}
+                <div className="flex-shrink-0">=
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-xl font-semibold">Bánh mì</h3>

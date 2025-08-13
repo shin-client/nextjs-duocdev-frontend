@@ -23,7 +23,7 @@ import { useAppContext } from "@/components/app-provider";
 export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-    const {setIsAuth} = useAppContext();
+  const { setIsAuth } = useAppContext();
   const clearTokens = searchParams.get("clearTokens");
   const loginMutation = useLoginMutation();
   const form = useForm<LoginBodyType>({
@@ -36,12 +36,13 @@ export default function LoginForm() {
 
   useEffect(() => {
     if (clearTokens) setIsAuth(false);
-  }, [clearTokens, setIsAuth])
+  }, [clearTokens, setIsAuth]);
 
   const onSubmit = async (data: LoginBodyType) => {
     if (loginMutation.isPending) return;
     try {
       const result = await loginMutation.mutateAsync(data);
+      setIsAuth(true);
       toast.success(result.payload.message);
       router.push("/manage/dashboard");
     } catch (error) {

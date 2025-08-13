@@ -1,4 +1,5 @@
 "use client";
+import { useAppContext } from "@/components/app-provider";
 import {
   getAccessTokenFromLocalStorage,
   getRefreshTokenFromLocalStorage,
@@ -9,6 +10,7 @@ import { useEffect, useRef } from "react";
 
 const Logout = () => {
   const router = useRouter();
+  const { setIsAuth } = useAppContext();
   const searchParams = useSearchParams();
   const refreshTokenFormUrl = searchParams.get("refreshToken");
   const accessTokenFormUrl = searchParams.get("accessToken");
@@ -35,10 +37,11 @@ const Logout = () => {
     if (shouldLogout()) {
       hasExecuted.current = true;
       mutateAsync().then(() => router.push("/login"));
+      setIsAuth(false);
     } else {
       router.push("/");
     }
-  }, [accessTokenFormUrl, mutateAsync, refreshTokenFormUrl, router]);
+  }, [accessTokenFormUrl, mutateAsync, refreshTokenFormUrl, router, setIsAuth]);
 
   return (
     <div className="flex items-center justify-center">
