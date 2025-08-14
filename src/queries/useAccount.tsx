@@ -32,6 +32,9 @@ export const useGetAccount = ({ id }: { id: number }) => {
   return useQuery({
     queryKey: ["accounts", id],
     queryFn: () => accountApiRequest.getEmployee(id),
+    enabled: id > 0,
+    staleTime: 5 * 60 * 1000,
+    retry: 2,
   });
 };
 
@@ -57,7 +60,7 @@ export const useUpdateAccountMutation = () => {
       id: number;
     }) => accountApiRequest.updateEmployee(id, body),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["accounts"], exact: true });
     },
   });
 };

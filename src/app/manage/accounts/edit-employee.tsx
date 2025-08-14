@@ -16,16 +16,20 @@ import {
 } from "@/schemaValidations/account.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Upload } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
+import { useGetAccount, useUpdateAccountMutation } from "@/queries/useAccount";
+import { toast } from "sonner";
+import { useUploadMediaMutation } from "@/queries/useMedia";
+import { handleErrorApi } from "@/lib/utils";
 
 export default function EditEmployee({
   id,
   setId,
-  onSubmitSuccess
+  onSubmitSuccess,
 }: {
   id?: number | undefined;
   setId: (value: number | undefined) => void;
@@ -33,26 +37,67 @@ export default function EditEmployee({
 }) {
   const [file, setFile] = useState<File | null>(null);
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
+  const { data, isLoading } = useGetAccount({ id: id || 0 });
+  const updateAccountMutation = useUpdateAccountMutation();
+  const uploadMediaMutation = useUploadMediaMutation();
   const form = useForm<UpdateEmployeeAccountBodyType>({
     resolver: zodResolver(UpdateEmployeeAccountBody),
     defaultValues: {
-      name: "",
-      email: "",
+      name: "Đang lấy dữ liệu...",
+      email: "Đang lấy dữ liệu...",
       avatar: undefined,
       password: undefined,
       confirmPassword: undefined,
       changePassword: false,
     },
   });
+
   const avatar = form.watch("avatar");
   const name = form.watch("name");
   const changePassword = form.watch("changePassword");
-  const previewAvatarFromFile = useMemo(() => {
-    if (file) {
-      return URL.createObjectURL(file);
+  const previewAvatarFromFile = file ? URL.createObjectURL(file) : avatar;
+
+  useEffect(() => {
+    if (data && id) {
+      const { name, email, avatar } = data.payload.data;
+      form.reset({
+        name,
+        email,
+        avatar: avatar ?? undefined,
+        changePassword: form.getValues("changePassword"),
+        password: form.getValues("password"),
+        confirmPassword: form.getValues("confirmPassword"),
+      });
     }
-    return avatar;
-  }, [file, avatar]);
+  }, [data, form, id]);
+
+  const onSubmit = async (values: UpdateEmployeeAccountBodyType) => {
+    try {
+      let body: UpdateEmployeeAccountBodyType & { id: number } = {
+        id: id as number,
+        ...values,
+      };
+
+      if (file) {
+        const formData = new FormData();
+        formData.append("file", file);
+        const uploadImageResult =
+          await uploadMediaMutation.mutateAsync(formData);
+        const imageUrl = uploadImageResult.payload.data;
+        body = {
+          ...body,
+          avatar: imageUrl,
+        };
+      }
+
+      const result = await updateAccountMutation.mutateAsync(body);
+      toast.success(result.payload.message);
+      onSubmitSuccess?.();
+      setId(undefined);
+    } catch (error) {
+      handleErrorApi({ error, setError: form.setError });
+    }
+  };
 
   return (
     <Dialog
@@ -60,6 +105,8 @@ export default function EditEmployee({
       onOpenChange={(value) => {
         if (!value) {
           setId(undefined);
+          setFile(null);
+          form.reset();
         }
       }}
     >
@@ -75,17 +122,21 @@ export default function EditEmployee({
             noValidate
             className="grid auto-rows-max items-start gap-4 md:gap-8"
             id="edit-employee-form"
+            onSubmit={form.handleSubmit(onSubmit)}
           >
             <div className="grid gap-4 py-4">
               <FormField
                 control={form.control}
                 name="avatar"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
                     <div className="flex items-start justify-start gap-2">
-                      <Avatar className="aspect-square h-[100px] w-[100px] rounded-md object-cover">
-                        <AvatarImage src={previewAvatarFromFile} />
-                        <AvatarFallback className="rounded-none">
+                      <Avatar className="aspect-square h-[100px] w-[100px] rounded-md">
+                        <AvatarImage
+                          src={previewAvatarFromFile}
+                          className="object-cover"
+                        />
+                        <AvatarFallback className="rounded-none text-center">
                           {name || "Avatar"}
                         </AvatarFallback>
                       </Avatar>
@@ -95,19 +146,15 @@ export default function EditEmployee({
                         ref={avatarInputRef}
                         onChange={(e) => {
                           const file = e.target.files?.[0];
-                          if (file) {
-                            setFile(file);
-                            field.onChange(
-                              "http://localhost:3000/" + file.name,
-                            );
-                          }
+                          if (file) setFile(file);
                         }}
                         className="hidden"
                       />
                       <button
-                        className="flex aspect-square w-[100px] items-center justify-center rounded-md border border-dashed"
+                        className={`flex aspect-square w-[100px] items-center justify-center rounded-md border border-dashed ${isLoading ? "cursor-not-allowed" : ""}`}
                         type="button"
                         onClick={() => avatarInputRef.current?.click()}
+                        disabled={isLoading}
                       >
                         <Upload className="text-muted-foreground h-4 w-4" />
                         <span className="sr-only">Upload</span>
@@ -125,7 +172,12 @@ export default function EditEmployee({
                     <div className="grid grid-cols-4 items-center justify-items-start gap-4">
                       <Label htmlFor="name">Tên</Label>
                       <div className="col-span-3 w-full space-y-2">
-                        <Input id="name" className="w-full" {...field} />
+                        <Input
+                          id="name"
+                          className="w-full"
+                          {...field}
+                          disabled={isLoading}
+                        />
                         <FormMessage />
                       </div>
                     </div>
@@ -140,7 +192,12 @@ export default function EditEmployee({
                     <div className="grid grid-cols-4 items-center justify-items-start gap-4">
                       <Label htmlFor="email">Email</Label>
                       <div className="col-span-3 w-full space-y-2">
-                        <Input id="email" className="w-full" {...field} />
+                        <Input
+                          id="email"
+                          className="w-full"
+                          {...field}
+                          disabled={isLoading}
+                        />
                         <FormMessage />
                       </div>
                     </div>
@@ -158,6 +215,7 @@ export default function EditEmployee({
                         <Switch
                           checked={field.value}
                           onCheckedChange={field.onChange}
+                          disabled={isLoading}
                         />
                         <FormMessage />
                       </div>
@@ -215,7 +273,11 @@ export default function EditEmployee({
           </form>
         </Form>
         <DialogFooter>
-          <Button type="submit" form="edit-employee-form">
+          <Button
+            type="submit"
+            form="edit-employee-form"
+            isLoading={updateAccountMutation.isPending}
+          >
             Lưu
           </Button>
         </DialogFooter>
