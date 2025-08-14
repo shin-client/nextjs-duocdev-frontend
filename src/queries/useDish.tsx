@@ -1,16 +1,6 @@
 import dishApiRequest from "@/apiRequests/dish";
-import {
-  DishListResType,
-  DishResType,
-  UpdateDishBodyType,
-} from "@/schemaValidations/dish.schema";
+import { UpdateDishBodyType } from "@/schemaValidations/dish.schema";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
-type DishesQueryData = {
-  payload: DishListResType;
-};
-
-type DishType = DishResType["data"]
 
 export const useDishes = () => {
   return useQuery({
@@ -33,18 +23,7 @@ export const useCreateDish = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: dishApiRequest.addDish,
-    onSuccess: (newDish) => {
-      queryClient.setQueryData(["dishes"], (oldData: DishesQueryData) => {
-        if (!oldData) return oldData;
-        return {
-          ...oldData,
-          payload: {
-            ...oldData.payload,
-            data: [...oldData.payload.data, newDish.payload.data],
-          },
-        };
-      });
-
+    onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["dishes"],
       });
@@ -64,27 +43,8 @@ export const useUpdateDish = () => {
     }: UpdateDishBodyType & {
       id: number;
     }) => dishApiRequest.updateDish(id, body),
-    onSuccess: (updatedDish, variables) => {
-      const { id } = variables;
-
-      // Update specific dish cache
-      queryClient.setQueryData(["dishes", id], updatedDish);
-
-      // Update list cache
-      queryClient.setQueryData(["dishes"], (oldData: DishesQueryData) => {
-        if (!oldData) return oldData;
-        return {
-          ...oldData,
-          payload: {
-            ...oldData.payload,
-            data: oldData.payload.data.map((dish: DishType) =>
-              dish.id === id ? updatedDish.payload.data : dish,
-            ),
-          },
-        };
-      });
-
-      queryClient.invalidateQueries({ queryKey: ["dishes"] });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["dishes"], exact: true });
     },
   });
 };
@@ -93,34 +53,13 @@ export const useDeleteDish = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => dishApiRequest.deleteDish(id),
-    onMutate: async (deletedId) => {
-      // Optimistic update
-      await queryClient.cancelQueries({ queryKey: ["dishes"] });
-
-      const previousDishes = queryClient.getQueryData(["dishes"]);
-
-      queryClient.setQueryData(["dishes"], (oldData: DishesQueryData) => {
-        if (!oldData) return oldData;
-        return {
-          ...oldData,
-          payload: {
-            ...oldData.payload,
-            data: oldData.payload.data.filter(
-              (dish: DishType) => dish.id !== deletedId,
-            ),
-          },
-        };
-      });
-
-      return { previousDishes };
-    },
     onSuccess: (data, deletedId) => {
       queryClient.removeQueries({
         queryKey: ["dishes", deletedId],
       });
     },
-    onError: (err, deletedId, context) => {
-      queryClient.setQueryData(["dishes"], context?.previousDishes);
+    onError: (error) => {
+      console.error("Failed to delete dish:", error);
     },
   });
 };

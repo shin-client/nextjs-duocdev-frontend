@@ -17,7 +17,7 @@ import {
 } from "@/schemaValidations/account.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusCircle, Upload } from "lucide-react";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -45,7 +45,9 @@ export default function AddEmployee() {
 
   const avatar = form.watch("avatar");
   const name = form.watch("name");
-  const previewAvatarFromFile = file ? URL.createObjectURL(file) : avatar;
+  const previewAvatarFromFile = useMemo(() => {
+    return file ? URL.createObjectURL(file) : avatar;
+  }, [file, avatar]);
 
   const onSubmit = async (values: CreateEmployeeAccountBodyType) => {
     try {

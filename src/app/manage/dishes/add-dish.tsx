@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusCircle, Upload } from "lucide-react";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   Form,
@@ -22,7 +22,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { getVietnameseDishStatus } from "@/lib/utils";
+import { getVietnameseDishStatus, handleErrorApi } from "@/lib/utils";
 import {
   CreateDishBody,
   CreateDishBodyType,
@@ -36,11 +36,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useCreateDish } from "@/queries/useDish";
+import { toast } from "sonner";
+import { useUploadMediaMutation } from "@/queries/useMedia";
+import { DialogDescription } from "@radix-ui/react-dialog";
 
 export default function AddDish() {
   const [file, setFile] = useState<File | null>(null);
   const [open, setOpen] = useState(false);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
+
+  const { isPending, mutateAsync: createDish } = useCreateDish();
+  const { mutateAsync: uploadMedia } = useUploadMediaMutation();
 
   const form = useForm<CreateDishBodyType>({
     resolver: zodResolver(CreateDishBody),
@@ -48,17 +55,52 @@ export default function AddDish() {
       name: "",
       description: "",
       price: 0,
-      image: "",
+      image: undefined,
       status: DishStatus.Unavailable,
     },
   });
 
   const image = form.watch("image");
   const name = form.watch("name");
-  const previewAvatarFromFile = file ? URL.createObjectURL(file) : image;
+  const previewAvatarFromFile = useMemo(() => {
+    return file ? URL.createObjectURL(file) : image;
+  }, [file, image]);
+
+  const onSubmit = async (values: CreateDishBodyType) => {
+    try {
+      let body = values;
+      if (file) {
+        const formData = new FormData();
+        formData.append("file", file);
+        const uploadImageResult = await uploadMedia(formData);
+        const imageUrl = uploadImageResult.payload.data;
+        body = {
+          ...values,
+          image: imageUrl,
+        };
+      }
+      const result = await createDish(body);
+      toast.success(result.payload.message);
+      handleOpenChange(false);
+    } catch (error) {
+      handleErrorApi({ error, setError: form.setError });
+    }
+  };
+
+  const reset = () => {
+    form.reset();
+    setFile(null);
+  };
+
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      reset();
+    }
+  };
 
   return (
-    <Dialog onOpenChange={setOpen} open={open}>
+    <Dialog onOpenChange={handleOpenChange} open={open}>
       <DialogTrigger asChild>
         <Button size="sm" className="h-7 gap-1">
           <PlusCircle className="h-3.5 w-3.5" />
@@ -68,6 +110,7 @@ export default function AddDish() {
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-screen overflow-auto sm:max-w-[600px]">
+        <DialogDescription className="sr-only"></DialogDescription>
         <DialogHeader>
           <DialogTitle>Thêm món ăn</DialogTitle>
         </DialogHeader>
@@ -76,6 +119,7 @@ export default function AddDish() {
             noValidate
             className="grid auto-rows-max items-start gap-4 md:gap-8"
             id="add-dish-form"
+            onSubmit={form.handleSubmit(onSubmit)}
           >
             <div className="grid gap-4 py-4">
               <FormField
@@ -90,7 +134,7 @@ export default function AddDish() {
                           className="object-cover"
                         />
                         <AvatarFallback className="rounded-none text-center">
-                          {name || "Avatar"}
+                          {name || "Ảnh món ăn"}
                         </AvatarFallback>
                       </Avatar>
                       <input
@@ -115,7 +159,6 @@ export default function AddDish() {
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="name"
@@ -144,6 +187,10 @@ export default function AddDish() {
                           className="w-full"
                           {...field}
                           type="number"
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            field.onChange(value === "" ? 0 : Number(value));
+                          }}
                         />
                         <FormMessage />
                       </div>
@@ -206,7 +253,7 @@ export default function AddDish() {
           </form>
         </Form>
         <DialogFooter>
-          <Button type="submit" form="add-dish-form">
+          <Button type="submit" form="add-dish-form" isLoading={isPending}>
             Thêm
           </Button>
         </DialogFooter>

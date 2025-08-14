@@ -62,7 +62,9 @@ export default function EditDish({
 
   const image = form.watch("image");
   const name = form.watch("name");
-  const previewAvatarFromFile = file ? URL.createObjectURL(file) : image;
+  const previewAvatarFromFile = useMemo(() => {
+    return file ? URL.createObjectURL(file) : image;
+  }, [file, image]);
 
   return (
     <Dialog

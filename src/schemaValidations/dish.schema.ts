@@ -5,7 +5,7 @@ export const CreateDishBody = z.object({
   name: z.string().min(1, "Tên món ăn là bắt buộc"),
   description: z.string().min(1, "Mô tả là bắt buộc"),
   price: z.number().min(0, "Giá phải lớn hơn hoặc bằng 0"),
-  image: z.string().min(1, "Hình ảnh là bắt buộc"),
+  image: z.string().optional(),
   status: z.enum(DishStatusValues).optional(),
 });
 
@@ -16,7 +16,7 @@ export const DishSchema = z.object({
   name: z.string(),
   price: z.coerce.number(),
   description: z.string(),
-  image: z.string(),
+  image: z.url().optional(),
   status: z.enum(DishStatusValues),
   createdAt: z.date(),
   updatedAt: z.date(),

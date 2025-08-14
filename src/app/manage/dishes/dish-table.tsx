@@ -50,6 +50,7 @@ import AutoPagination from "@/components/auto-pagination";
 import { DishListResType } from "@/schemaValidations/dish.schema";
 import EditDish from "@/app/manage/dishes/edit-dish";
 import AddDish from "@/app/manage/dishes/add-dish";
+import { useDishes } from "@/queries/useDish";
 
 type DishItem = DishListResType["data"][0];
 
@@ -184,15 +185,19 @@ function AlertDialogDeleteDish({
 const PAGE_SIZE = 10;
 export default function DishTable() {
   const searchParam = useSearchParams();
-  const page = searchParam.get("page") ? Number(searchParam.get("page")) : 1;
-  const pageIndex = page - 1;
   const [dishIdEdit, setDishIdEdit] = useState<number | undefined>();
   const [dishDelete, setDishDelete] = useState<DishItem | null>(null);
-  const data: any[] = [];
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+
+  const { data: dishes, isLoading: dishesIsLoading } = useDishes();
+
+  const page = searchParam.get("page") ? Number(searchParam.get("page")) : 1;
+  const pageIndex = page - 1;
+  const data = dishes?.payload.data ?? [];
+
   const [pagination, setPagination] = useState({
     pageIndex, // Gía trị mặc định ban đầu, không có ý nghĩa khi data được fetch bất đồng bộ
     pageSize: PAGE_SIZE, //default page size
@@ -226,6 +231,26 @@ export default function DishTable() {
       pageSize: PAGE_SIZE,
     });
   }, [table, pageIndex]);
+
+  if (dishesIsLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600"></div>
+      </div>
+    );
+  }
+
+  if (data.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center space-y-4">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold">Chưa có món ăn nào</h3>
+          <p className="text-muted-foreground">Thêm món ăn đầu tiên</p>
+        </div>
+        <AddDish />
+      </div>
+    );
+  }
 
   return (
     <DishTableContext.Provider
@@ -289,11 +314,13 @@ export default function DishTable() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    No results.
+                  <TableCell colSpan={columns.length}>
+                    <div className="py-4 text-center">
+                      <p>Không tìm thấy kết quả với bộ lọc hiện tại</p>
+                      <Button onClick={() => table.resetColumnFilters()}>
+                        Xóa bộ lọc
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               )}
