@@ -1,15 +1,15 @@
-import { DishStatusValues } from '@/constants/type'
-import z from 'zod'
+import { DishStatusValues } from "@/constants/type";
+import z from "zod";
 
 export const CreateDishBody = z.object({
-  name: z.string().min(1).max(256),
-  price: z.coerce.number().positive(),
-  description: z.string().max(10000),
-  image: z.string().url(),
-  status: z.enum(DishStatusValues).optional()
-})
+  name: z.string().min(1, "Tên món ăn là bắt buộc"),
+  description: z.string().min(1, "Mô tả là bắt buộc"),
+  price: z.number().min(0, "Giá phải lớn hơn hoặc bằng 0"),
+  image: z.string().min(1, "Hình ảnh là bắt buộc"),
+  status: z.enum(DishStatusValues).optional(),
+});
 
-export type CreateDishBodyType = z.TypeOf<typeof CreateDishBody>
+export type CreateDishBodyType = z.infer<typeof CreateDishBody>;
 
 export const DishSchema = z.object({
   id: z.number(),
@@ -19,26 +19,26 @@ export const DishSchema = z.object({
   image: z.string(),
   status: z.enum(DishStatusValues),
   createdAt: z.date(),
-  updatedAt: z.date()
-})
+  updatedAt: z.date(),
+});
 
 export const DishRes = z.object({
   data: DishSchema,
-  message: z.string()
-})
+  message: z.string(),
+});
 
-export type DishResType = z.TypeOf<typeof DishRes>
+export type DishResType = z.infer<typeof DishRes>;
 
 export const DishListRes = z.object({
   data: z.array(DishSchema),
-  message: z.string()
-})
+  message: z.string(),
+});
 
-export type DishListResType = z.TypeOf<typeof DishListRes>
+export type DishListResType = z.infer<typeof DishListRes>;
 
-export const UpdateDishBody = CreateDishBody
-export type UpdateDishBodyType = CreateDishBodyType
+export const UpdateDishBody = CreateDishBody;
+export type UpdateDishBodyType = CreateDishBodyType;
 export const DishParams = z.object({
-  id: z.coerce.number()
-})
-export type DishParamsType = z.TypeOf<typeof DishParams>
+  id: z.coerce.number(),
+});
+export type DishParamsType = z.infer<typeof DishParams>;
