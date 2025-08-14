@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Upload } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   Form,
@@ -22,7 +22,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { getVietnameseDishStatus } from "@/lib/utils";
+import { getVietnameseDishStatus, handleErrorApi } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -36,6 +36,9 @@ import {
 } from "@/schemaValidations/dish.schema";
 import { DishStatus, DishStatusValues } from "@/constants/type";
 import { Textarea } from "@/components/ui/textarea";
+import { useDish, useUpdateDish } from "@/queries/useDish";
+import { useUploadMediaMutation } from "@/queries/useMedia";
+import { toast } from "sonner";
 
 export default function EditDish({
   id,
@@ -49,13 +52,17 @@ export default function EditDish({
   const [file, setFile] = useState<File | null>(null);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
 
+  const { data, isLoading } = useDish({ id: id || 0 });
+  const { isPending, mutateAsync: updateDish } = useUpdateDish();
+  const { mutateAsync: uploadMedia } = useUploadMediaMutation();
+
   const form = useForm<UpdateDishBodyType>({
     resolver: zodResolver(UpdateDishBody),
     defaultValues: {
-      name: "",
-      description: "",
+      name: "Đang lấy dữ liệu...",
+      description: "Đang lấy dữ liệu...",
       price: 0,
-      image: "",
+      image: undefined,
       status: DishStatus.Unavailable,
     },
   });
@@ -66,20 +73,64 @@ export default function EditDish({
     return file ? URL.createObjectURL(file) : image;
   }, [file, image]);
 
+  useEffect(() => {
+    if (data && id) {
+      const { name, description, price, image, status } = data.payload.data;
+      form.reset({
+        name,
+        price,
+        description,
+        image: image ?? undefined,
+        status,
+      });
+    }
+  }, [data, form, id]);
+
+  const onSubmit = async (values: UpdateDishBodyType) => {
+    try {
+      let body: UpdateDishBodyType & { id: number } = {
+        id: id as number,
+        ...values,
+      };
+
+      if (file) {
+        const formData = new FormData();
+        formData.append("file", file);
+        const uploadImageResult = await uploadMedia(formData);
+        const imageUrl = uploadImageResult.payload.data;
+        body = {
+          ...body,
+          image: imageUrl,
+        };
+      }
+
+      const result = await updateDish(body);
+      toast.success(result.payload.message);
+      onSubmitSuccess?.();
+      reset();
+    } catch (error) {
+      handleErrorApi({ error, setError: form.setError });
+    }
+  };
+
+  const reset = () => {
+    setId(undefined);
+    setFile(null);
+    form.reset();
+  };
+
   return (
     <Dialog
       open={Boolean(id)}
       onOpenChange={(value) => {
-        if (!value) {
-          setId(undefined);
-        }
+        if (!value) reset();
       }}
     >
       <DialogContent className="max-h-screen overflow-auto sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Cập nhật món ăn</DialogTitle>
           <DialogDescription>
-            Các trường sau đây là bắ buộc: Tên, ảnh
+            Các trường sau đây là bắt buộc: Tên, ảnh
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -87,12 +138,13 @@ export default function EditDish({
             noValidate
             className="grid auto-rows-max items-start gap-4 md:gap-8"
             id="edit-dish-form"
+            onSubmit={form.handleSubmit(onSubmit)}
           >
             <div className="grid gap-4 py-4">
               <FormField
                 control={form.control}
                 name="image"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
                     <div className="flex items-start justify-start gap-2">
                       <Avatar className="aspect-square h-[100px] w-[100px] rounded-md">
@@ -110,12 +162,7 @@ export default function EditDish({
                         ref={imageInputRef}
                         onChange={(e) => {
                           const file = e.target.files?.[0];
-                          if (file) {
-                            setFile(file);
-                            field.onChange(
-                              "http://localhost:3000/" + file.name,
-                            );
-                          }
+                          if (file) setFile(file);
                         }}
                         className="hidden"
                       />
@@ -123,6 +170,7 @@ export default function EditDish({
                         className="flex aspect-square w-[100px] items-center justify-center rounded-md border border-dashed"
                         type="button"
                         onClick={() => imageInputRef.current?.click()}
+                        disabled={isLoading}
                       >
                         <Upload className="text-muted-foreground h-4 w-4" />
                         <span className="sr-only">Upload</span>
@@ -131,7 +179,6 @@ export default function EditDish({
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="name"
@@ -140,7 +187,12 @@ export default function EditDish({
                     <div className="grid grid-cols-4 items-center justify-items-start gap-4">
                       <Label htmlFor="name">Tên món ăn</Label>
                       <div className="col-span-3 w-full space-y-2">
-                        <Input id="name" className="w-full" {...field} />
+                        <Input
+                          id="name"
+                          className="w-full"
+                          {...field}
+                          disabled={isLoading}
+                        />
                         <FormMessage />
                       </div>
                     </div>
@@ -160,6 +212,11 @@ export default function EditDish({
                           className="w-full"
                           {...field}
                           type="number"
+                          disabled={isLoading}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            field.onChange(value === "" ? 0 : Number(value));
+                          }}
                         />
                         <FormMessage />
                       </div>
@@ -179,6 +236,7 @@ export default function EditDish({
                           id="description"
                           className="w-full"
                           {...field}
+                          disabled={isLoading}
                         />
                         <FormMessage />
                       </div>
@@ -196,7 +254,8 @@ export default function EditDish({
                       <div className="col-span-3 w-full space-y-2">
                         <Select
                           onValueChange={field.onChange}
-                          defaultValue={field.value}
+                          value={field.value}
+                          disabled={isLoading}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -222,7 +281,7 @@ export default function EditDish({
           </form>
         </Form>
         <DialogFooter>
-          <Button type="submit" form="edit-dish-form">
+          <Button type="submit" form="edit-dish-form" isLoading={isPending}>
             Lưu
           </Button>
         </DialogFooter>

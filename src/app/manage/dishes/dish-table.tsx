@@ -44,13 +44,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { formatCurrency, getVietnameseDishStatus } from "@/lib/utils";
+import {
+  formatCurrency,
+  getVietnameseDishStatus,
+  handleErrorApi,
+} from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 import AutoPagination from "@/components/auto-pagination";
 import { DishListResType } from "@/schemaValidations/dish.schema";
 import EditDish from "@/app/manage/dishes/edit-dish";
 import AddDish from "@/app/manage/dishes/add-dish";
-import { useDishes } from "@/queries/useDish";
+import { useDeleteDish, useDishes } from "@/queries/useDish";
+import DOMPurify from "dompurify";
+import { toast } from "sonner";
 
 type DishItem = DishListResType["data"][0];
 
@@ -76,8 +82,8 @@ export const columns: ColumnDef<DishItem>[] = [
     header: "Ảnh",
     cell: ({ row }) => (
       <div>
-        <Avatar className="aspect-square h-[100px] w-[100px] rounded-md object-cover">
-          <AvatarImage src={row.getValue("image")} />
+        <Avatar className="aspect-square h-[100px] w-[100px] rounded-md">
+          <AvatarImage src={row.getValue("image")} className="object-cover" />
           <AvatarFallback className="rounded-none text-center">
             {row.original.name}
           </AvatarFallback>
@@ -94,7 +100,9 @@ export const columns: ColumnDef<DishItem>[] = [
     accessorKey: "price",
     header: "Giá cả",
     cell: ({ row }) => (
-      <div className="capitalize">{formatCurrency(row.getValue("price"))}</div>
+      <div className="capitalize">
+        {formatCurrency(row.getValue("price"))} VNĐ
+      </div>
     ),
   },
   {
@@ -102,7 +110,9 @@ export const columns: ColumnDef<DishItem>[] = [
     header: "Mô tả",
     cell: ({ row }) => (
       <div
-        dangerouslySetInnerHTML={{ __html: row.getValue("description") }}
+        dangerouslySetInnerHTML={{
+          __html: DOMPurify.sanitize(row.getValue("description")),
+        }}
         className="whitespace-pre-line"
       />
     ),
@@ -153,6 +163,19 @@ function AlertDialogDeleteDish({
   dishDelete: DishItem | null;
   setDishDelete: (value: DishItem | null) => void;
 }) {
+  const { mutateAsync } = useDeleteDish();
+
+  const deleteDish = async () => {
+    if (dishDelete) {
+      try {
+        const result = await mutateAsync(dishDelete.id);
+        setDishDelete(null);
+        toast.success(result.payload.message);
+      } catch (error) {
+        handleErrorApi({ error });
+      }
+    }
+  };
   return (
     <AlertDialog
       open={Boolean(dishDelete)}
@@ -167,15 +190,15 @@ function AlertDialogDeleteDish({
           <AlertDialogTitle>Xóa món ăn?</AlertDialogTitle>
           <AlertDialogDescription>
             Món{" "}
-            <span className="bg-foreground text-primary-foreground rounded px-1">
+            <span className="text-primary-foreground rounded">
               {dishDelete?.name}
             </span>{" "}
             sẽ bị xóa vĩnh viễn
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction>Continue</AlertDialogAction>
+          <AlertDialogCancel>Huỷ</AlertDialogCancel>
+          <AlertDialogAction onClick={deleteDish}>Vẫn xoá</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

@@ -112,10 +112,7 @@ export const checkAndRefreshToken = async (param?: {
 };
 
 export const formatCurrency = (number: number) => {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(number);
+  return Number(number).toLocaleString("en-US");
 };
 
 export const getVietnameseDishStatus = (

@@ -43,8 +43,10 @@ export const useUpdateDish = () => {
     }: UpdateDishBodyType & {
       id: number;
     }) => dishApiRequest.updateDish(id, body),
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
+      const { id } = variables;
       queryClient.invalidateQueries({ queryKey: ["dishes"], exact: true });
+      queryClient.invalidateQueries({ queryKey: ["dishes", id] });
     },
   });
 };
@@ -53,9 +55,9 @@ export const useDeleteDish = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => dishApiRequest.deleteDish(id),
-    onSuccess: (data, deletedId) => {
-      queryClient.removeQueries({
-        queryKey: ["dishes", deletedId],
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["dishes"],
       });
     },
     onError: (error) => {
