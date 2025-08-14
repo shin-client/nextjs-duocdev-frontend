@@ -40,7 +40,7 @@ import {
 import AddEmployee from "@/app/manage/accounts/add-employee";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import EditEmployee from "@/app/manage/accounts/edit-employee";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, use, useEffect, useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -53,7 +53,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useSearchParams } from "next/navigation";
 import AutoPagination from "@/components/auto-pagination";
-import { useGetAccountList } from "@/queries/useAccount";
+import {
+  useDeleteAccountMutation,
+  useGetAccountList,
+} from "@/queries/useAccount";
+import { toast } from "sonner";
+import { handleErrorApi } from "@/lib/utils";
 
 type AccountItem = AccountListResType["data"][0];
 
@@ -112,8 +117,7 @@ export const columns: ColumnDef<AccountType>[] = [
     id: "actions",
     enableHiding: false,
     cell: function Actions({ row }) {
-      const { setEmployeeIdEdit, setEmployeeDelete } =
-        useContext(AccountTableContext);
+      const { setEmployeeIdEdit, setEmployeeDelete } = use(AccountTableContext);
       const openEditEmployee = () => {
         setEmployeeIdEdit(row.original.id);
       };
@@ -150,6 +154,20 @@ function AlertDialogDeleteAccount({
   employeeDelete: AccountItem | null;
   setEmployeeDelete: (value: AccountItem | null) => void;
 }) {
+  const { mutateAsync } = useDeleteAccountMutation();
+
+  const deleteAccount = async () => {
+    if (employeeDelete) {
+      try {
+        const result = await mutateAsync(employeeDelete.id);
+        setEmployeeDelete(null);
+        toast.success(result.payload.message);
+      } catch (error) {
+        handleErrorApi({ error });
+      }
+    }
+  };
+
   return (
     <AlertDialog
       open={Boolean(employeeDelete)}
@@ -164,15 +182,15 @@ function AlertDialogDeleteAccount({
           <AlertDialogTitle>Xóa nhân viên?</AlertDialogTitle>
           <AlertDialogDescription>
             Tài khoản{" "}
-            <span className="bg-foreground text-primary-foreground rounded px-1">
+            <span className="text-primary-foreground rounded">
               {employeeDelete?.name}
             </span>{" "}
             sẽ bị xóa vĩnh viễn
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction>Continue</AlertDialogAction>
+          <AlertDialogCancel>Huỷ</AlertDialogCancel>
+          <AlertDialogAction onClick={deleteAccount}>Vẫn xoá</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
