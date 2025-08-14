@@ -8,7 +8,7 @@ import {
   UpdateMeBodyType,
 } from "@/schemaValidations/account.schema";
 
-const prefix = "/accounts";
+const prefix = "accounts";
 
 const accountApiRequest = {
   me: () => http.get<AccountResType>(`${prefix}/me`),
