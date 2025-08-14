@@ -37,9 +37,11 @@ export default function EditEmployee({
 }) {
   const [file, setFile] = useState<File | null>(null);
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
+
   const { data, isLoading } = useGetAccount({ id: id || 0 });
   const updateAccountMutation = useUpdateAccountMutation();
   const uploadMediaMutation = useUploadMediaMutation();
+
   const form = useForm<UpdateEmployeeAccountBodyType>({
     resolver: zodResolver(UpdateEmployeeAccountBody),
     defaultValues: {
@@ -93,21 +95,23 @@ export default function EditEmployee({
       const result = await updateAccountMutation.mutateAsync(body);
       toast.success(result.payload.message);
       onSubmitSuccess?.();
-      setId(undefined);
+      reset();
     } catch (error) {
       handleErrorApi({ error, setError: form.setError });
     }
+  };
+
+  const reset = () => {
+    setId(undefined);
+    setFile(null);
+    form.reset();
   };
 
   return (
     <Dialog
       open={Boolean(id)}
       onOpenChange={(value) => {
-        if (!value) {
-          setId(undefined);
-          setFile(null);
-          form.reset();
-        }
+        if (!value) reset();
       }}
     >
       <DialogContent className="max-h-screen overflow-auto sm:max-w-[600px]">
