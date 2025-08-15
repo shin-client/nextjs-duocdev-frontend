@@ -43,7 +43,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { getVietnameseTableStatus, handleErrorApi } from "@/lib/utils";
+import {
+  getVietnameseTableStatus,
+  handleErrorApi,
+} from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 import AutoPagination from "@/components/auto-pagination";
 import { TableListResType } from "@/schemaValidations/table.schema";
@@ -51,6 +54,7 @@ import EditTable from "@/app/manage/tables/edit-table";
 import AddTable from "@/app/manage/tables/add-table";
 import { useDeleteTable, useTables } from "@/queries/useTable";
 import { toast } from "sonner";
+import QRCodeTable from "@/components/qrcode-table";
 
 type TableItem = TableListResType["data"][0];
 
@@ -91,7 +95,15 @@ export const columns: ColumnDef<TableItem>[] = [
   {
     accessorKey: "token",
     header: "QR Code",
-    cell: ({ row }) => <div>{row.getValue("number")}</div>,
+    cell: ({ row }) => (
+      <div>
+        <QRCodeTable
+          key={row.getValue("number")}
+          token={row.getValue("token")}
+          tableNumber={row.getValue("number")}
+        />
+      </div>
+    ),
   },
   {
     id: "actions",
@@ -135,22 +147,22 @@ function AlertDialogDeleteTable({
   const { mutateAsync } = useDeleteTable();
 
   const deleteTable = async () => {
-  if (tableDelete) {
-    const deletePromise = mutateAsync(tableDelete.number);
+    if (tableDelete) {
+      const deletePromise = mutateAsync(tableDelete.number);
 
-    toast.promise(deletePromise, {
-      loading: `Đang xoá bàn ăn số ${tableDelete.number}...`,
-      success: (result) => {
-        setTableDelete(null);
-        return result.payload.message;
-      },
-      error: (error) => {
-        handleErrorApi({ error });
-        return `Lỗi khi xoá bàn ăn số ${tableDelete.number}`;
-      },
-    });
-  }
-};
+      toast.promise(deletePromise, {
+        loading: `Đang xoá bàn ăn số ${tableDelete.number}...`,
+        success: (result) => {
+          setTableDelete(null);
+          return result.payload.message;
+        },
+        error: (error) => {
+          handleErrorApi({ error });
+          return `Lỗi khi xoá bàn ăn số ${tableDelete.number}`;
+        },
+      });
+    }
+  };
 
   return (
     <AlertDialog
