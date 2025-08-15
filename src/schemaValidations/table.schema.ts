@@ -1,13 +1,14 @@
 import { TableStatusValues } from '@/constants/type'
 import z from 'zod'
 
+
 export const CreateTableBody = z.object({
   number: z.coerce.number().positive(),
   capacity: z.coerce.number().positive(),
   status: z.enum(TableStatusValues).optional()
 })
 
-export type CreateTableBodyType = z.TypeOf<typeof CreateTableBody>
+export type CreateTableBodyType = z.infer<typeof CreateTableBody>
 
 export const TableSchema = z.object({
   number: z.coerce.number(),
@@ -37,7 +38,8 @@ export const UpdateTableBody = z.object({
   capacity: z.coerce.number().positive(),
   status: z.enum(TableStatusValues).optional()
 })
-export type UpdateTableBodyType = z.TypeOf<typeof UpdateTableBody>
+export type UpdateTableBodyType = z.infer<typeof UpdateTableBody>
+
 export const TableParams = z.object({
   number: z.coerce.number()
 })
