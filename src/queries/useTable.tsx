@@ -28,9 +28,6 @@ export const useCreateTable = () => {
         queryKey: ["tables"],
       });
     },
-    onError: (error) => {
-      console.error("Failed to create dish:", error);
-    },
   });
 };
 
@@ -59,9 +56,6 @@ export const useDeleteTable = () => {
       queryClient.invalidateQueries({
         queryKey: ["tables"],
       });
-    },
-    onError: (error) => {
-      console.error("Failed to delete dish:", error);
     },
   });
 };

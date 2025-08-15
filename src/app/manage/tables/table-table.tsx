@@ -43,12 +43,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { getVietnameseTableStatus } from "@/lib/utils";
+import { getVietnameseTableStatus, handleErrorApi } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 import AutoPagination from "@/components/auto-pagination";
 import { TableListResType } from "@/schemaValidations/table.schema";
 import EditTable from "@/app/manage/tables/edit-table";
 import AddTable from "@/app/manage/tables/add-table";
+import { useDeleteTable, useTables } from "@/queries/useTable";
+import { toast } from "sonner";
 
 type TableItem = TableListResType["data"][0];
 
@@ -130,6 +132,26 @@ function AlertDialogDeleteTable({
   tableDelete: TableItem | null;
   setTableDelete: (value: TableItem | null) => void;
 }) {
+  const { mutateAsync } = useDeleteTable();
+
+  const deleteTable = async () => {
+  if (tableDelete) {
+    const deletePromise = mutateAsync(tableDelete.number);
+
+    toast.promise(deletePromise, {
+      loading: `Đang xoá bàn ăn số ${tableDelete.number}...`,
+      success: (result) => {
+        setTableDelete(null);
+        return result.payload.message;
+      },
+      error: (error) => {
+        handleErrorApi({ error });
+        return `Lỗi khi xoá bàn ăn số ${tableDelete.number}`;
+      },
+    });
+  }
+};
+
   return (
     <AlertDialog
       open={Boolean(tableDelete)}
@@ -144,15 +166,15 @@ function AlertDialogDeleteTable({
           <AlertDialogTitle>Xóa bàn ăn?</AlertDialogTitle>
           <AlertDialogDescription>
             Bàn{" "}
-            <span className="bg-foreground text-primary-foreground rounded px-1">
+            <span className="text-primary-foreground rounded">
               {tableDelete?.number}
             </span>{" "}
             sẽ bị xóa vĩnh viễn
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction>Continue</AlertDialogAction>
+          <AlertDialogCancel>Huỷ</AlertDialogCancel>
+          <AlertDialogAction onClick={deleteTable}>Vẫn xoá</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -162,16 +184,18 @@ function AlertDialogDeleteTable({
 const PAGE_SIZE = 10;
 export default function TableTable() {
   const searchParam = useSearchParams();
-  const page = searchParam.get("page") ? Number(searchParam.get("page")) : 1;
-  const pageIndex = page - 1;
-  // const params = Object.fromEntries(searchParam.entries())
   const [tableIdEdit, setTableIdEdit] = useState<number | undefined>();
   const [tableDelete, setTableDelete] = useState<TableItem | null>(null);
-  const data: any[] = [];
-  const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const page = searchParam.get("page") ? Number(searchParam.get("page")) : 1;
+  const [sorting, setSorting] = useState<SortingState>([]);
   const [rowSelection, setRowSelection] = useState({});
+
+  const { data: tables, isLoading: tablesIsLoading } = useTables();
+
+  const pageIndex = page - 1;
+  const data = tables?.payload.data ?? [];
   const [pagination, setPagination] = useState({
     pageIndex, // Gía trị mặc định ban đầu, không có ý nghĩa khi data được fetch bất đồng bộ
     pageSize: PAGE_SIZE, //default page size
@@ -205,6 +229,26 @@ export default function TableTable() {
       pageSize: PAGE_SIZE,
     });
   }, [table, pageIndex]);
+
+  if (tablesIsLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600"></div>
+      </div>
+    );
+  }
+
+  if (data.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center space-y-4">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold">Chưa có bàn ăn nào</h3>
+          <p className="text-muted-foreground">Thêm bàn ăn đầu tiên</p>
+        </div>
+        <AddTable />
+      </div>
+    );
+  }
 
   return (
     <TableTableContext.Provider
