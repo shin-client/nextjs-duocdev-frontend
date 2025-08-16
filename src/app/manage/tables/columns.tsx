@@ -3,7 +3,6 @@
 import QRCodeTable from "@/components/qrcode-table";
 import { Button } from "@/components/ui/button";
 import { getVietnameseTableStatus } from "@/lib/utils";
-import { TableResType } from "@/schemaValidations/table.schema";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,8 +15,7 @@ import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { ColumnDef } from "@tanstack/react-table";
 import { use } from "react";
 import { TableOverviewContext } from "./table-overview";
-
-export type TableItem = TableResType["data"];
+import { TableItem } from "@/constants/type";
 
 export const columns: ColumnDef<TableItem>[] = [
   {

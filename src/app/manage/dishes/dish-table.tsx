@@ -35,30 +35,18 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { createContext, useContext, useEffect, useState } from "react";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
   formatCurrency,
   getVietnameseDishStatus,
-  handleErrorApi,
 } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 import AutoPagination from "@/components/auto-pagination";
-import { DishListResType } from "@/schemaValidations/dish.schema";
 import EditDish from "@/app/manage/dishes/edit-dish";
 import AddDish from "@/app/manage/dishes/add-dish";
-import { useDeleteDish, useDishes } from "@/queries/useDish";
 import DOMPurify from "dompurify";
-import { toast } from "sonner";
+import AlertDialogDeleteDish from "./alert-dialog-delete-dish";
+import { useDishes } from "@/queries/useDish";
+import { DishItem } from "@/constants/type";
 
-type DishItem = DishListResType["data"][0];
 
 const DishTableContext = createContext<{
   setDishIdEdit: (value: number) => void;
@@ -156,55 +144,6 @@ export const columns: ColumnDef<DishItem>[] = [
   },
 ];
 
-function AlertDialogDeleteDish({
-  dishDelete,
-  setDishDelete,
-}: {
-  dishDelete: DishItem | null;
-  setDishDelete: (value: DishItem | null) => void;
-}) {
-  const { mutateAsync } = useDeleteDish();
-
-  const deleteDish = async () => {
-    if (dishDelete) {
-      try {
-        const result = await mutateAsync(dishDelete.id);
-        setDishDelete(null);
-        toast.success(result.payload.message);
-      } catch (error) {
-        handleErrorApi({ error });
-      }
-    }
-  };
-  return (
-    <AlertDialog
-      open={Boolean(dishDelete)}
-      onOpenChange={(value) => {
-        if (!value) {
-          setDishDelete(null);
-        }
-      }}
-    >
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Xóa món ăn?</AlertDialogTitle>
-          <AlertDialogDescription>
-            Món{" "}
-            <span className="text-primary-foreground rounded">
-              {dishDelete?.name}
-            </span>{" "}
-            sẽ bị xóa vĩnh viễn
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Huỷ</AlertDialogCancel>
-          <AlertDialogAction onClick={deleteDish}>Vẫn xoá</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  );
-}
-
 const PAGE_SIZE = 10;
 
 export default function DishTable() {
@@ -282,10 +221,12 @@ export default function DishTable() {
     >
       <div className="w-full">
         <EditDish id={dishIdEdit} setId={setDishIdEdit} />
+
         <AlertDialogDeleteDish
           dishDelete={dishDelete}
           setDishDelete={setDishDelete}
         />
+
         <div className="flex items-center py-4">
           <Input
             placeholder="Lọc tên"

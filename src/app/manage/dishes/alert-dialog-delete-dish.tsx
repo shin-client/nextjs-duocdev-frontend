@@ -1,4 +1,4 @@
-import { useDeleteTable } from "@/queries/useTable";
+import { useDeleteDish } from "@/queries/useDish";
 import { toast } from "sonner";
 import { handleErrorApi } from "@/lib/utils";
 import {
@@ -11,62 +11,61 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { TableItem } from "@/constants/type";
+import { DishItem } from "@/constants/type";
 
-const AlertDialogDeleteTable = ({
-  tableDelete,
-  setTableDelete,
+const AlertDialogDeleteDish = ({
+  dishDelete,
+  setDishDelete,
 }: {
-  tableDelete: TableItem | null;
-  setTableDelete: (value: TableItem | null) => void;
+  dishDelete: DishItem | null;
+  setDishDelete: (value: DishItem | null) => void;
 }) => {
-  const { mutateAsync } = useDeleteTable();
+  const { mutateAsync } = useDeleteDish();
 
-  const deleteTable = async () => {
-    if (tableDelete) {
-      const deletePromise = mutateAsync(tableDelete.number);
+  const deleteDish = async () => {
+    if (dishDelete) {
+      const deletePromise = mutateAsync(dishDelete.id);
 
       toast.promise(deletePromise, {
-        loading: `Đang xoá bàn ăn số ${tableDelete.number}...`,
+        loading: `Đang xoá món ăn số ${dishDelete.id}...`,
         success: (result) => {
-          setTableDelete(null);
+          setDishDelete(null);
           return result.payload.message;
         },
         error: (error) => {
           handleErrorApi({ error });
-          return `Lỗi khi xoá bàn ăn số ${tableDelete.number}`;
+          return `Lỗi khi xoá món ăn số ${dishDelete.id}`;
         },
       });
     }
   };
-
   return (
     <AlertDialog
-      open={Boolean(tableDelete)}
+      open={Boolean(dishDelete)}
       onOpenChange={(value) => {
         if (!value) {
-          setTableDelete(null);
+          setDishDelete(null);
         }
       }}
     >
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Xóa bàn ăn?</AlertDialogTitle>
+          <AlertDialogTitle>Xóa món ăn?</AlertDialogTitle>
           <AlertDialogDescription>
-            Bàn{" "}
+            Món{" "}
             <span className="text-primary-foreground rounded">
-              {tableDelete?.number}
+              {dishDelete?.name}
             </span>{" "}
             sẽ bị xóa vĩnh viễn
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Huỷ</AlertDialogCancel>
-          <AlertDialogAction onClick={deleteTable}>Vẫn xoá</AlertDialogAction>
+          <AlertDialogAction onClick={deleteDish}>Vẫn xoá</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   );
 };
 
-export default AlertDialogDeleteTable;
+export default AlertDialogDeleteDish;
