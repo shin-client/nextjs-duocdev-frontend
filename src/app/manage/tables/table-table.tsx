@@ -74,6 +74,11 @@ export const columns: ColumnDef<TableItem>[] = [
     cell: ({ row }) => (
       <div className="text-center">{row.getValue("number")}</div>
     ),
+    filterFn: (row, columnId, filterValue) => {
+      return !filterValue
+        ? true
+        : String(filterValue) === String(row.getValue("number"));
+    },
   },
   {
     accessorKey: "capacity",

@@ -18,7 +18,11 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { getTableLink, getVietnameseTableStatus } from "@/lib/utils";
+import {
+  getTableLink,
+  getVietnameseTableStatus,
+  handleErrorApi,
+} from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -28,10 +32,16 @@ import {
 } from "@/components/ui/select";
 import {
   UpdateTableBody,
+  UpdateTableBodyType,
 } from "@/schemaValidations/table.schema";
 import { TableStatus, TableStatusValues } from "@/constants/type";
 import { Switch } from "@/components/ui/switch";
 import Link from "next/link";
+import { useTable, useUpdateTable } from "@/queries/useTable";
+import { useEffect } from "react";
+import { toast } from "sonner";
+import { DialogDescription } from "@radix-ui/react-dialog";
+import QRCodeTable from "@/components/qrcode-table";
 
 export default function EditTable({
   id,
@@ -42,6 +52,9 @@ export default function EditTable({
   setId: (value: number | undefined) => void;
   onSubmitSuccess?: () => void;
 }) {
+  const { data, isLoading } = useTable({ id: id || 0 });
+  const { isPending, mutateAsync: updateDish } = useUpdateTable();
+
   const form = useForm({
     resolver: zodResolver(UpdateTableBody),
     defaultValues: {
@@ -50,24 +63,51 @@ export default function EditTable({
       changeToken: false,
     },
   });
-  const tableNumber = 0;
+
+  useEffect(() => {
+    if (data && id) {
+      const { capacity, status } = data.payload.data;
+      form.reset({
+        capacity,
+        status,
+        changeToken: form.getValues("changeToken"),
+      });
+    }
+  }, [data, form, id]);
+
+  const onSubmit = async (values: UpdateTableBodyType) => {
+    try {
+      const body: UpdateTableBodyType & { id: number } = {
+        id: id as number,
+        ...values,
+      };
+
+      const result = await updateDish(body);
+      toast.success(result.payload.message);
+      onSubmitSuccess?.();
+      reset();
+    } catch (error) {
+      handleErrorApi({ error, setError: form.setError });
+    }
+  };
+
+  const reset = () => {
+    setId(undefined);
+    form.reset();
+  };
 
   return (
     <Dialog
       open={Boolean(id)}
       onOpenChange={(value) => {
-        if (!value) {
-          setId(undefined);
-        }
+        if (!value) reset();
       }}
     >
       <DialogContent
         className="max-h-screen overflow-auto sm:max-w-[600px]"
-        onCloseAutoFocus={() => {
-          form.reset();
-          setId(undefined);
-        }}
+        onCloseAutoFocus={() => reset()}
       >
+        <DialogDescription className="sr-only"></DialogDescription>
         <DialogHeader>
           <DialogTitle>Cập nhật bàn ăn</DialogTitle>
         </DialogHeader>
@@ -76,6 +116,7 @@ export default function EditTable({
             noValidate
             className="grid auto-rows-max items-start gap-4 md:gap-8"
             id="edit-table-form"
+            onSubmit={form.handleSubmit(onSubmit)}
           >
             <div className="grid gap-4 py-4">
               <FormItem>
@@ -86,8 +127,8 @@ export default function EditTable({
                       id="number"
                       type="number"
                       className="w-full"
-                      value={tableNumber}
-                      readOnly
+                      value={data?.payload.data.number}
+                      disabled={true}
                     />
                     <FormMessage />
                   </div>
@@ -107,6 +148,7 @@ export default function EditTable({
                           {...field}
                           type="number"
                           value={field.value as number}
+                          disabled={isLoading}
                         />
                         <FormMessage />
                       </div>
@@ -125,6 +167,7 @@ export default function EditTable({
                         <Select
                           onValueChange={field.onChange}
                           value={field.value}
+                          disabled={isLoading}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -171,26 +214,36 @@ export default function EditTable({
               <FormItem>
                 <div className="grid grid-cols-4 items-center justify-items-start gap-4">
                   <Label>QR Code</Label>
-                  <div className="col-span-3 w-full space-y-2"></div>
+                  <div className="col-span-3 w-full space-y-2">
+                    {data && (
+                      <QRCodeTable
+                        key={data.payload.data.number}
+                        token={data.payload.data.token}
+                        tableNumber={data.payload.data.number}
+                      />
+                    )}
+                  </div>
                 </div>
               </FormItem>
               <FormItem>
                 <div className="grid grid-cols-4 items-center justify-items-start gap-4">
                   <Label>URL gọi món</Label>
                   <div className="col-span-3 w-full space-y-2">
-                    <Link
-                      href={getTableLink({
-                        token: "123123123",
-                        tableNumber: tableNumber,
-                      })}
-                      target="_blank"
-                      className="break-all"
-                    >
-                      {getTableLink({
-                        token: "123123123",
-                        tableNumber: tableNumber,
-                      })}
-                    </Link>
+                    {data && (
+                      <Link
+                        href={getTableLink({
+                          token: data.payload.data.token,
+                          tableNumber: data.payload.data.number,
+                        })}
+                        target="_blank"
+                        className="break-all"
+                      >
+                        {getTableLink({
+                          token: data.payload.data.token,
+                          tableNumber: data.payload.data.number,
+                        })}
+                      </Link>
+                    )}
                   </div>
                 </div>
               </FormItem>
@@ -198,7 +251,7 @@ export default function EditTable({
           </form>
         </Form>
         <DialogFooter>
-          <Button type="submit" form="edit-table-form">
+          <Button type="submit" form="edit-table-form" isLoading={isPending}>
             Lưu
           </Button>
         </DialogFooter>
