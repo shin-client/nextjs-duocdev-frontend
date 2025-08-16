@@ -23,9 +23,9 @@ import {
 } from "@tanstack/react-table";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import AddTable from "./add-table";
 import AutoPagination from "@/components/auto-pagination";
 import { Button } from "@/components/ui/button";
+import AddDish from "./add-dish";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -86,15 +86,15 @@ const DataTable = <TData, TValue>({
     <div>
       <div className="flex items-center py-4">
         <Input
-          placeholder="Lọc số bàn"
-          value={(table.getColumn("number")?.getFilterValue() as string) ?? ""}
+          placeholder="Lọc tên"
+          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("number")?.setFilterValue(event.target.value)
+            table.getColumn("name")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
         <div className="ml-auto flex items-center gap-2">
-          <AddTable />
+          <AddDish />
         </div>
       </div>
 
@@ -160,7 +160,7 @@ const DataTable = <TData, TValue>({
           <AutoPagination
             page={table.getState().pagination.pageIndex + 1}
             pageSize={table.getPageCount()}
-            pathname="/manage/tables"
+            pathname="/manage/dishes"
           />
         </div>
       </div>

@@ -1,5 +1,3 @@
-"use client";
-
 import QRCodeTable from "@/components/qrcode-table";
 import { Button } from "@/components/ui/button";
 import { getVietnameseTableStatus } from "@/lib/utils";

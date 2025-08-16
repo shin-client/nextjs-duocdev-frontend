@@ -214,8 +214,8 @@ export default function AccountTable() {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
   const [pagination, setPagination] = useState({
-    pageIndex, // Gía trị mặc định ban đầu, không có ý nghĩa khi data được fetch bất đồng bộ
-    pageSize: PAGE_SIZE, //default page size
+    pageIndex,
+    pageSize: PAGE_SIZE,
   });
 
   const table = useReactTable({
@@ -339,7 +339,7 @@ export default function AccountTable() {
               ) : (
                 <TableRow>
                   <TableCell colSpan={columns.length}>
-                    <div className="py-4 text-center">
+                    <div className="py-4 text-center space-y-2">
                       <p>Không tìm thấy kết quả với bộ lọc hiện tại</p>
                       <Button onClick={() => table.resetColumnFilters()}>
                         Xóa bộ lọc
