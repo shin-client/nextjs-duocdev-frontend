@@ -1,8 +1,10 @@
+import { AccountResType } from "@/schemaValidations/account.schema";
 import { DishResType } from "@/schemaValidations/dish.schema";
 import { TableResType } from "@/schemaValidations/table.schema";
 
-export type DishItem = DishResType["data"];
+export type AccountItem = AccountResType["data"];
 export type TableItem = TableResType["data"];
+export type DishItem = DishResType["data"];
 
 export const TokenType = {
   ForgotPasswordToken: "ForgotPasswordToken",
