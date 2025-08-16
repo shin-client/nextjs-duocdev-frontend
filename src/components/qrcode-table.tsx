@@ -1,77 +1,61 @@
 "use client";
 import { getTableLink } from "@/lib/utils";
-import Image from "next/image";
 import QRCode from "qrcode";
-import { useState, useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 interface QRCodeTableProps {
   token: string;
   tableNumber: number;
   width?: number;
-  height?: number;
 }
 
-const QRCodeTable = ({
-  token,
-  tableNumber,
-  width,
-  height,
-}: QRCodeTableProps) => {
-  const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
-  const [loading, setLoading] = useState(false);
+const QRCodeTable = ({ token, tableNumber, width = 250 }: QRCodeTableProps) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const generateQR = async () => {
-      const url = getTableLink({ token, tableNumber });
+    const canvas = canvasRef.current!;
 
-      try {
-        setLoading(true);
-        const result = await QRCode.toDataURL(url, {
-          width: width ?? 100,
-          margin: 2,
-          color: {
-            dark: "#000000",
-            light: "#FFFFFF",
-          },
-        });
-        setQrCodeUrl(result);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    generateQR();
-  }, [token, tableNumber, width]);
+    canvas.height = width + 70;
+    canvas.width = width;
 
-  if (loading) {
-    return (
-      <div
-        className={`h-[${height}px] w-[${width}px] animate-pulse rounded bg-gray-100`}
-      ></div>
+    const canvasContext = canvas.getContext("2d")!;
+    canvasContext.fillStyle = "#fff";
+    canvasContext.fillRect(0, 0, canvas.width, canvas.height);
+    canvasContext.font = "20px Arial";
+    canvasContext.textAlign = "center";
+    canvasContext.fillStyle = "#000";
+
+    canvasContext.fillText(
+      `Bàn số ${tableNumber}`,
+      canvas.width / 2,
+      canvas.width + 20,
     );
-  }
 
-  return (
-    <>
-      {qrCodeUrl && (
-        <Image
-          src={qrCodeUrl}
-          alt="QR Code"
-          width={width ?? 100}
-          height={height ?? 100}
-          className="rounded border"
-        />
-      )}
-      {!qrCodeUrl && !loading && (
-        <div
-          className={`flex h-[${height}px] w-[${width}px] items-center justify-center rounded bg-gray-100`}
-        >
-          <span className="text-gray-500">No QR Code</span>
-        </div>
-      )}
-    </>
-  );
+    canvasContext.fillText(
+      `Quét mã QR để gọi món`,
+      canvas.width / 2,
+      canvas.width + 50,
+    );
+
+    const virtalCanvas = document.createElement("canvas");
+    QRCode.toCanvas(
+      virtalCanvas,
+      getTableLink({
+        token,
+        tableNumber,
+      }),
+      {
+        width,
+        margin: 4,
+      },
+      function (error) {
+        if (error) console.error(error);
+        canvasContext.drawImage(virtalCanvas, 0, 0, width, width);
+      },
+    );
+  }, [token, width, tableNumber]);
+
+  return <canvas ref={canvasRef} className="border border-gray-200" />;
 };
 
 export default QRCodeTable;

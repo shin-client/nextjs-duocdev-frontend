@@ -43,10 +43,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  getVietnameseTableStatus,
-  handleErrorApi,
-} from "@/lib/utils";
+import { getVietnameseTableStatus, handleErrorApi } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 import AutoPagination from "@/components/auto-pagination";
 import { TableListResType } from "@/schemaValidations/table.schema";
@@ -73,30 +70,32 @@ const TableTableContext = createContext<{
 export const columns: ColumnDef<TableItem>[] = [
   {
     accessorKey: "number",
-    header: "Số bàn",
+    header: () => <div className="text-center">Số bàn</div>,
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("number")}</div>
+      <div className="text-center">{row.getValue("number")}</div>
     ),
   },
   {
     accessorKey: "capacity",
-    header: "Sức chứa",
+    header: () => <div className="text-center">Sức chứa</div>,
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("capacity")}</div>
+      <div className="text-center">{row.getValue("capacity")}</div>
     ),
   },
   {
     accessorKey: "status",
-    header: "Trạng thái",
+    header: () => <div className="text-center">Trạng thái</div>,
     cell: ({ row }) => (
-      <div>{getVietnameseTableStatus(row.getValue("status"))}</div>
+      <div className="text-center">
+        {getVietnameseTableStatus(row.getValue("status"))}
+      </div>
     ),
   },
   {
     accessorKey: "token",
-    header: "QR Code",
+    header: () => <div className="text-center">QR Code</div>,
     cell: ({ row }) => (
-      <div>
+      <div className="flex justify-center">
         <QRCodeTable
           key={row.getValue("number")}
           token={row.getValue("token")}
