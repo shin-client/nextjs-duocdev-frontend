@@ -33,20 +33,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { createContext, useContext, useEffect, useState } from "react";
-import {
-  formatCurrency,
-  getVietnameseDishStatus,
-} from "@/lib/utils";
+import { createContext, use, useEffect, useState } from "react";
+import { formatCurrency, getVietnameseDishStatus } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 import AutoPagination from "@/components/auto-pagination";
 import EditDish from "@/app/manage/dishes/edit-dish";
 import AddDish from "@/app/manage/dishes/add-dish";
 import DOMPurify from "dompurify";
-import AlertDialogDeleteDish from "./alert-dialog-delete-dish";
-import { useDishes } from "@/queries/useDish";
+import { useDeleteDish, useDishes } from "@/queries/useDish";
 import { DishItem } from "@/constants/type";
-
+import AlertDialogDelete from "@/components/alert-dialog-delete";
 
 const DishTableContext = createContext<{
   setDishIdEdit: (value: number) => void;
@@ -116,7 +112,7 @@ export const columns: ColumnDef<DishItem>[] = [
     id: "actions",
     enableHiding: false,
     cell: function Actions({ row }) {
-      const { setDishIdEdit, setDishDelete } = useContext(DishTableContext);
+      const { setDishIdEdit, setDishDelete } = use(DishTableContext);
       const openEditDish = () => {
         setDishIdEdit(row.original.id);
       };
@@ -148,6 +144,7 @@ const PAGE_SIZE = 10;
 
 export default function DishTable() {
   const searchParam = useSearchParams();
+
   const [dishIdEdit, setDishIdEdit] = useState<number | undefined>();
   const [dishDelete, setDishDelete] = useState<DishItem | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -156,6 +153,7 @@ export default function DishTable() {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   const { data: dishes, isLoading: dishesIsLoading } = useDishes();
+  const { mutateAsync } = useDeleteDish();
 
   const page = searchParam.get("page") ? Number(searchParam.get("page")) : 1;
   const pageIndex = page - 1;
@@ -216,15 +214,28 @@ export default function DishTable() {
   }
 
   return (
-    <DishTableContext.Provider
+    <DishTableContext
       value={{ dishIdEdit, setDishIdEdit, dishDelete, setDishDelete }}
     >
       <div className="w-full">
         <EditDish id={dishIdEdit} setId={setDishIdEdit} />
 
-        <AlertDialogDeleteDish
-          dishDelete={dishDelete}
-          setDishDelete={setDishDelete}
+        <AlertDialogDelete
+          item={dishDelete}
+          setItem={setDishDelete}
+          onDelete={(dish) => mutateAsync(dish.id)}
+          title="Xóa món ăn?"
+          description={(dish) => (
+            <>
+              Món{" "}
+              <span className="text-primary-foreground rounded">
+                {dish.name}
+              </span>{" "}
+              sẽ bị xóa vĩnh viễn
+            </>
+          )}
+          loadingMessage={(dish) => `Đang xoá món ăn số ${dish.id}...`}
+          errorMessage={(dish) => `Lỗi khi xoá món ăn số ${dish.id}`}
         />
 
         <div className="flex items-center py-4">
@@ -307,6 +318,6 @@ export default function DishTable() {
           </div>
         </div>
       </div>
-    </DishTableContext.Provider>
+    </DishTableContext>
   );
 }

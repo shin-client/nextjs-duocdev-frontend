@@ -3,10 +3,11 @@
 import { createContext, useState } from "react";
 import EditTable from "@/app/manage/tables/edit-table";
 import AddTable from "@/app/manage/tables/add-table";
-import { columns, TableItem } from "./columns";
+import { columns } from "./columns";
 import DataTable from "./data-table";
-import { useTables } from "@/queries/useTable";
-import AlertDialogDeleteTable from "./alert-dialog-delete-table";
+import { useDeleteTable, useTables } from "@/queries/useTable";
+import { TableItem } from "@/constants/type";
+import AlertDialogDelete from "@/components/alert-dialog-delete";
 
 export const TableOverviewContext = createContext<{
   setTableIdEdit: (value: number) => void;
@@ -23,7 +24,9 @@ export const TableOverviewContext = createContext<{
 export default function TableOverview() {
   const [tableIdEdit, setTableIdEdit] = useState<number | undefined>();
   const [tableDelete, setTableDelete] = useState<TableItem | null>(null);
+
   const { data: tables, isLoading: tablesIsLoading } = useTables();
+  const { mutateAsync } = useDeleteTable();
   const data = tables?.payload.data ?? [];
 
   if (tablesIsLoading) {
@@ -53,13 +56,25 @@ export default function TableOverview() {
       <div className="w-full">
         <EditTable id={tableIdEdit} setId={setTableIdEdit} />
 
-        <AlertDialogDeleteTable
-          tableDelete={tableDelete}
-          setTableDelete={setTableDelete}
+        <AlertDialogDelete
+          item={tableDelete}
+          setItem={setTableDelete}
+          onDelete={(table) => mutateAsync(table.number)}
+          title="Xóa bàn ăn?"
+          description={(table) => (
+            <>
+              Bàn{" "}
+              <span className="text-primary-foreground rounded">
+                {table.number}
+              </span>{" "}
+              sẽ bị xóa vĩnh viễn
+            </>
+          )}
+          loadingMessage={(table) => `Đang xoá bàn ăn số ${table.number}...`}
+          errorMessage={(table) => `Lỗi khi xoá bàn ăn số ${table.number}`}
         />
 
         <DataTable columns={columns} data={data} />
-
       </div>
     </TableOverviewContext>
   );
