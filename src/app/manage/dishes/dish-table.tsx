@@ -204,8 +204,9 @@ function AlertDialogDeleteDish({
     </AlertDialog>
   );
 }
-// Số lượng item trên 1 trang
+
 const PAGE_SIZE = 10;
+
 export default function DishTable() {
   const searchParam = useSearchParams();
   const [dishIdEdit, setDishIdEdit] = useState<number | undefined>();
@@ -222,8 +223,8 @@ export default function DishTable() {
   const data = dishes?.payload.data ?? [];
 
   const [pagination, setPagination] = useState({
-    pageIndex, // Gía trị mặc định ban đầu, không có ý nghĩa khi data được fetch bất đồng bộ
-    pageSize: PAGE_SIZE, //default page size
+    pageIndex,
+    pageSize: PAGE_SIZE,
   });
 
   const table = useReactTable({
