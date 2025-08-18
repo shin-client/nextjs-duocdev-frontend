@@ -8,6 +8,7 @@ import { DishItem } from "@/constants/type";
 import AlertDialogDelete from "@/components/alert-dialog-delete";
 import { columns } from "./columns";
 import DataTable from "./data-table";
+import revalidateApiRequest from "@/apiRequests/revalidate";
 
 export const DishTableContext = createContext<{
   setDishIdEdit: (value: number) => void;
@@ -73,6 +74,7 @@ export default function DishTable() {
           )}
           loadingMessage={(dish) => `Đang xoá món ăn số ${dish.id}...`}
           errorMessage={(dish) => `Lỗi khi xoá món ăn số ${dish.id}`}
+          onSuccess={async () => await revalidateApiRequest("dishes")}
         />
 
         <DataTable columns={columns} data={data} />

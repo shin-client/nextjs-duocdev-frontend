@@ -20,6 +20,7 @@ interface AlertDialogDeleteProps<T> {
   description: (item: T) => React.ReactNode;
   loadingMessage: (item: T) => string;
   errorMessage: (item: T) => string;
+  onSuccess?: () => void;
 }
 
 const AlertDialogDelete = <T,>({
@@ -30,6 +31,7 @@ const AlertDialogDelete = <T,>({
   description,
   loadingMessage,
   errorMessage,
+  onSuccess,
 }: AlertDialogDeleteProps<T>) => {
   const handleDelete = async () => {
     if (item) {
@@ -38,6 +40,7 @@ const AlertDialogDelete = <T,>({
       toast.promise(deletePromise, {
         loading: loadingMessage(item),
         success: (result) => {
+          onSuccess?.();
           setItem(null);
           return result.payload.message;
         },

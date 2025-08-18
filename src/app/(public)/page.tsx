@@ -11,7 +11,7 @@ export default async function Home() {
       payload: { data },
     } = result;
     dishList = data;
-  } catch (error) {
+  } catch {
     return <div>Something went wrong</div>;
   }
 
@@ -39,27 +39,30 @@ export default async function Home() {
       <section className="space-y-10 py-16">
         <h2 className="text-center text-2xl font-bold">Đa dạng các món ăn</h2>
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2">
-          {dishList.map((item) => (
-            <div className="w flex gap-4" key={item.id}>
-              <div className="flex-shrink-0">
-                <Image
-                  src={item.image ?? ""}
-                  width={150}
-                  height={150}
-                  quality={100}
-                  className="h-[150px] w-[150px] rounded-md object-cover"
-                  alt={item.name}
-                />
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-xl font-semibold">{item.name}</h3>
-                <p className="">{item.description}</p>
-                <p className="font-semibold">
-                  {formatCurrency(item.price)} VNĐ
-                </p>
-              </div>
-            </div>
-          ))}
+          {dishList.map(
+            (item) =>
+              item.status !== "Hidden" && (
+                <div className="w flex gap-4" key={item.id}>
+                  <div className="flex-shrink-0">
+                    <Image
+                      src={item.image ?? ""}
+                      width={150}
+                      height={150}
+                      quality={100}
+                      className="h-[150px] w-[150px] rounded-md object-cover"
+                      alt={item.name}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-xl font-semibold">{item.name}</h3>
+                    <p className="">{item.description}</p>
+                    <p className="font-semibold">
+                      {formatCurrency(item.price)} VNĐ
+                    </p>
+                  </div>
+                </div>
+              ),
+          )}
         </div>
       </section>
     </div>

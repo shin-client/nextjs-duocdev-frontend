@@ -40,6 +40,7 @@ import { useCreateDish } from "@/queries/useDish";
 import { toast } from "sonner";
 import { useUploadMediaMutation } from "@/queries/useMedia";
 import { DialogDescription } from "@radix-ui/react-dialog";
+import revalidateApiRequest from "@/apiRequests/revalidate";
 
 export default function AddDish() {
   const [file, setFile] = useState<File | null>(null);
@@ -81,6 +82,7 @@ export default function AddDish() {
       }
       const result = await createDish(body);
       toast.success(result.payload.message);
+      await revalidateApiRequest("dishes");
       handleOpenChange(false);
     } catch (error) {
       handleErrorApi({ error, setError: form.setError });
