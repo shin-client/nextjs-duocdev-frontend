@@ -23,7 +23,7 @@ import { useAppContext } from "@/components/app-provider";
 export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { setIsAuth } = useAppContext();
+  const { setRole } = useAppContext();
   const clearTokens = searchParams.get("clearTokens");
   const loginMutation = useLoginMutation();
   const form = useForm<LoginBodyType>({
@@ -35,13 +35,13 @@ export default function LoginForm() {
   });
 
   useEffect(() => {
-    if (clearTokens) setIsAuth(false);
-  }, [clearTokens, setIsAuth]);
+    if (clearTokens) setRole();
+  }, [clearTokens, setRole]);
 
   const onSubmit = async (data: LoginBodyType) => {
     try {
       const result = await loginMutation.mutateAsync(data);
-      setIsAuth(true);
+      setRole(result.payload.data.account.role);
       toast.success(result.payload.message);
       router.push("/manage/dashboard");
     } catch (error) {
@@ -106,7 +106,11 @@ export default function LoginForm() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" isLoading={loginMutation.isPending}>
+              <Button
+                type="submit"
+                className="w-full"
+                isLoading={loginMutation.isPending}
+              >
                 Đăng nhập
               </Button>
               <Button variant="outline" className="w-full" type="button">

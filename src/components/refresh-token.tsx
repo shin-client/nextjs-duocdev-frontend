@@ -10,7 +10,7 @@ const UNAUTHENTICATED_PATH = ["/login", "/register", "/refresh-token"];
 const RefreshToken = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const { setIsAuth } = useAppContext();
+  const { setRole } = useAppContext();
 
   useEffect(() => {
     if (UNAUTHENTICATED_PATH.includes(pathname)) return;
@@ -21,7 +21,7 @@ const RefreshToken = () => {
     checkAndRefreshToken({
       onError: () => {
         clearInterval(interval);
-        setIsAuth(false);
+        setRole();
         router.push("/login");
       },
     });
@@ -31,14 +31,14 @@ const RefreshToken = () => {
         checkAndRefreshToken({
           onError: () => {
             clearInterval(interval);
-            setIsAuth(false);
+            setRole();
             router.push("/login");
           },
         }),
       TIMEOUT,
     );
     return () => clearInterval(interval);
-  }, [pathname, router, setIsAuth]);
+  }, [pathname, router, setRole]);
   return null;
 };
 export default RefreshToken;

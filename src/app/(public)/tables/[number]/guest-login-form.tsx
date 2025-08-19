@@ -11,16 +11,47 @@ import {
   GuestLoginBody,
   GuestLoginBodyType,
 } from "@/schemaValidations/guest.schema";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
+import { useGuestLogin } from "@/queries/useGuest";
+import { useAppContext } from "@/components/app-provider";
+import { handleErrorApi } from "@/lib/utils";
+import { toast } from "sonner";
 
 export default function GuestLoginForm() {
+  const searchParams = useSearchParams();
+  const params = useParams();
+  const router = useRouter();
+  const { setRole } = useAppContext();
+
+  const { isPending, mutateAsync: guestLogin } = useGuestLogin();
+
+  const tableNumber = Number(params.number);
+  const token = searchParams.get("token");
+
   const form = useForm<GuestLoginBodyType>({
     resolver: zodResolver(GuestLoginBody),
     defaultValues: {
       name: "",
-      token: "",
-      tableNumber: 1,
+      token: token ?? "",
+      tableNumber: tableNumber,
     },
   });
+
+  useEffect(() => {
+    if (!token) return router.push("/");
+  }, [router, token]);
+
+  const onSubmit = async (values: GuestLoginBodyType) => {
+    try {
+      const result = await guestLogin(values);
+      setRole(result.payload.data.guest.role);
+      toast.success(result.payload.message);
+      router.push("/guest/menu");
+    } catch (error) {
+      handleErrorApi({ error });
+    }
+  };
 
   return (
     <Card className="mx-auto w-full max-w-sm">
@@ -32,6 +63,7 @@ export default function GuestLoginForm() {
           <form
             className="w-full max-w-[600px] flex-shrink-0 space-y-2"
             noValidate
+            onSubmit={form.handleSubmit(onSubmit)}
           >
             <div className="grid gap-4">
               <FormField
@@ -48,7 +80,7 @@ export default function GuestLoginForm() {
                 )}
               />
 
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full" isLoading={isPending}>
                 Đăng nhập
               </Button>
             </div>

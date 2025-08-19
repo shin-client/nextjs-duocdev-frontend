@@ -4,9 +4,11 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import RefreshToken from "./refresh-token";
 import { createContext, use, useEffect, useState } from "react";
 import {
+  decodeToken,
   getAccessTokenFromLocalStorage,
   removeTokensFromLocalStorage,
 } from "@/lib/utils";
+import { RoleType } from "@/types/jwt.types";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -18,8 +20,8 @@ const queryClient = new QueryClient({
 });
 
 interface AppContextType {
-  isAuth: boolean;
-  setIsAuth: (isAuth: boolean) => void;
+  role: RoleType | undefined;
+  setRole: (role?: RoleType | undefined) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -33,23 +35,26 @@ export const useAppContext = () => {
 };
 
 const AppProvider = ({ children }: { children: React.ReactNode }) => {
-  const [isAuth, setIsAuthState] = useState(false);
+  const [role, setRoleState] = useState<RoleType | undefined>(undefined);
 
   useEffect(() => {
     const accessToken = getAccessTokenFromLocalStorage();
-    if (accessToken) setIsAuthState(true);
+    if (accessToken) {
+      const role = decodeToken(accessToken).role;
+      setRoleState(role);
+    }
   }, []);
 
-  const setIsAuth = (isAuth: boolean) => {
-    setIsAuthState(isAuth);
-    if (!isAuth) {
+  const setRole = (role?: RoleType | undefined) => {
+    setRoleState(role);
+    if (!role) {
       removeTokensFromLocalStorage();
     }
   };
 
   const value: AppContextType = {
-    isAuth,
-    setIsAuth,
+    role,
+    setRole,
   };
 
   return (
