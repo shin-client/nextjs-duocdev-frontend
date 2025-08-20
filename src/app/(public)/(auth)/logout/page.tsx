@@ -4,7 +4,7 @@ import {
   getAccessTokenFromLocalStorage,
   getRefreshTokenFromLocalStorage,
 } from "@/lib/utils";
-import { useLogoutMutation } from "@/queries/useAuth";
+import { useLogout } from "@/queries/useAuth";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef } from "react";
 
@@ -15,7 +15,7 @@ const Logout = () => {
   const refreshTokenFormUrl = searchParams.get("refreshToken");
   const accessTokenFormUrl = searchParams.get("accessToken");
   const hasExecuted = useRef(false);
-  const { mutateAsync } = useLogoutMutation();
+  const { mutateAsync } = useLogout();
 
   useEffect(() => {
     if (hasExecuted.current) return;

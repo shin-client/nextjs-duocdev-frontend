@@ -13,7 +13,7 @@ import { useForm } from "react-hook-form";
 import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { LoginBody, LoginBodyType } from "@/schemaValidations/auth.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useLoginMutation } from "@/queries/useAuth";
+import { useLogin } from "@/queries/useAuth";
 import { toast } from "sonner";
 import { handleErrorApi } from "@/lib/utils";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -25,7 +25,7 @@ export default function LoginForm() {
   const searchParams = useSearchParams();
   const { setRole } = useAppContext();
   const clearTokens = searchParams.get("clearTokens");
-  const loginMutation = useLoginMutation();
+  const loginMutation = useLogin();
   const form = useForm<LoginBodyType>({
     resolver: zodResolver(LoginBody),
     defaultValues: {

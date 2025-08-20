@@ -10,14 +10,14 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useLogoutMutation } from "@/queries/useAuth";
+import { useLogout } from "@/queries/useAuth";
 import { handleErrorApi } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useAccountMe } from "@/queries/useAccount";
 import { useAppContext } from "@/components/app-provider";
 
 export default function DropdownAvatar() {
-  const logoutMutation = useLogoutMutation();
+  const { mutateAsync: triggerLogout, isPending } = useLogout();
   const { data } = useAccountMe();
   const { setRole } = useAppContext();
   const account = data?.payload.data;
@@ -25,7 +25,7 @@ export default function DropdownAvatar() {
 
   const logout = async () => {
     try {
-      await logoutMutation.mutateAsync();
+      await triggerLogout();
       setRole();
       router.push("/login");
     } catch (error) {
@@ -65,7 +65,7 @@ export default function DropdownAvatar() {
         <DropdownMenuItem
           onClick={logout}
           className="cursor-pointer"
-          disabled={logoutMutation.isPending}
+          disabled={isPending}
         >
           Đăng xuất
         </DropdownMenuItem>

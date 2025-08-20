@@ -1,42 +1,86 @@
 "use client";
 import { useAppContext } from "@/components/app-provider";
+import { Role } from "@/constants/type";
+import { cn, handleErrorApi } from "@/lib/utils";
+import { useLogout } from "@/queries/useAuth";
+import { useGuestLogout } from "@/queries/useGuest";
+import { RoleType } from "@/types/jwt.types";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-const menuItems = [
+const menuItems: {
+  title: string;
+  href: string;
+  roles?: RoleType[];
+  hideWhenLogin?: boolean;
+}[] = [
   {
-    title: "Món ăn",
-    href: "/menu",
+    title: "Trang chủ",
+    href: "/",
   },
   {
-    title: "Đơn hàng",
-    href: "/orders",
-    authRequired: true,
+    title: "Menu",
+    href: "/guest/menu",
+    roles: [Role.Guest],
   },
   {
     title: "Đăng nhập",
     href: "/login",
-    authRequired: false,
+    hideWhenLogin: true,
   },
   {
     title: "Quản lý",
     href: "/manage/dashboard",
-    authRequired: true,
+    roles: [Role.Owner, Role.Employee],
   },
 ];
 
 export default function NavItems({ className }: { className?: string }) {
-  const { role } = useAppContext();
+  const { role, setRole } = useAppContext();
+  const router = useRouter();
 
-  return menuItems.map((item) => {
-    if (
-      (item.authRequired === false && role) ||
-      (item.authRequired === true && !role)
-    )
-      return null;
-    return (
-      <Link href={item.href} key={item.href} className={className}>
-        {item.title}
-      </Link>
-    );
-  });
+  const { mutateAsync: triggerLogout } = useLogout();
+  const { mutateAsync: triggerGuestLogout } = useGuestLogout();
+
+  const logout = async () => {
+    try {
+      const isGuest = role === Role.Guest;
+      const logoutTrigger = isGuest ? triggerGuestLogout : triggerLogout;
+      const redirectPath = isGuest ? "/" : "/login";
+
+      await logoutTrigger();
+      setRole();
+      router.push(redirectPath);
+    } catch (error) {
+      handleErrorApi({ error });
+    }
+  };
+
+  return (
+    <>
+      {menuItems
+        .filter((item) => {
+          // Ẩn khi đã login
+          if (item.hideWhenLogin && role) return false;
+
+          // Lọc item có roles = role
+          if (item.roles && item.roles.length > 0) {
+            return role && item.roles.includes(role);
+          }
+
+          return true;
+        })
+        .map((item) => (
+          <Link href={item.href} key={item.href} className={className}>
+            {item.title}
+          </Link>
+        ))}
+
+      {role && (
+        <span className={cn(className, "cursor-pointer")} onClick={logout}>
+          Đăng xuất
+        </span>
+      )}
+    </>
+  );
 }
