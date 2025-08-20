@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { decodeToken } from "./lib/utils";
+import { Role } from "./constants/type";
 
-const privatePaths = ["/manage"];
+const managePaths = ["/manage"];
+const guestPaths = ["/guest"];
+const privatePaths = [...managePaths, ...guestPaths];
 const unAuthPaths = ["/login"];
 
 export function middleware(request: NextRequest) {
@@ -11,30 +15,46 @@ export function middleware(request: NextRequest) {
   // Chưa login thì không cho vào privatePaths
   if (privatePaths.some((path) => pathname.startsWith(path)) && !refreshToken) {
     const url = new URL("/login", request.url);
-    url.searchParams.set("clearTokens", "true")
+    url.searchParams.set("clearTokens", "true");
     return NextResponse.redirect(url);
   }
 
-  // Login rồi thì không cho vào unAuthPaths
-  if (unAuthPaths.some((path) => pathname.startsWith(path)) && refreshToken) {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
+  // Đã login
+  if (refreshToken) {
+    // Không cho vào unAuthPaths
+    if (unAuthPaths.some((path) => pathname.startsWith(path))) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
 
-  // Login rồi nhưng hết hạn access token
-  if (
-    privatePaths.some((path) => pathname.startsWith(path)) &&
-    !accessToken &&
-    refreshToken
-  ) {
-    const url = new URL("/refresh-token", request.url);
-    url.searchParams.set("refreshToken", refreshToken);
-    url.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(url);
+    // Hết hạn access token
+    if (
+      privatePaths.some((path) => pathname.startsWith(path)) &&
+      !accessToken
+    ) {
+      const url = new URL("/refresh-token", request.url);
+      url.searchParams.set("refreshToken", refreshToken);
+      url.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(url);
+    }
+
+    // Vào không đúng role, redirect về home
+    const role = decodeToken(refreshToken).role;
+
+    const isUnauthorizedAccess = () => {
+      if (role === Role.Guest) {
+        return managePaths.some((path) => pathname.startsWith(path));
+      }
+      return guestPaths.some((path) => pathname.startsWith(path));
+    };
+
+    if (isUnauthorizedAccess()) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/manage/:path*", "/login"],
+  matcher: ["/manage/:path*", "/guest/:path*", "/login"],
 };

@@ -6,9 +6,10 @@ import { EntityError } from "./http";
 import { toast } from "sonner";
 import { decode } from "jsonwebtoken";
 import authApiRequest from "@/apiRequests/auth";
-import { DishStatus, OrderStatus, TableStatus } from "@/constants/type";
+import { DishStatus, OrderStatus, Role, TableStatus } from "@/constants/type";
 import envConfig from "@/config";
 import { TokenPayload } from "@/types/jwt.types";
+import guestApiRequest from "@/apiRequests/guest";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -98,9 +99,15 @@ export const checkAndRefreshToken = async (param?: {
       decodedAccessToken.exp - now <
       (decodedAccessToken.exp - decodedAccessToken.iat) / 3
     ) {
-      const res = await authApiRequest.refreshToken();
+      const role = decodedRefreshToken.role;
+      const res =
+        role === Role.Guest
+          ? await guestApiRequest.refreshToken()
+          : await authApiRequest.refreshToken();
+
       setAccessTokenToLocalStorage(res.payload.data.accessToken);
       setRefreshTokenToLocalStorage(res.payload.data.refreshToken);
+
       param?.onSuccess?.();
     }
   } catch {
@@ -169,5 +176,5 @@ export const getTableLink = ({
 };
 
 export const decodeToken = (token: string) => {
-  return decode(token) as TokenPayload
-}
+  return decode(token) as TokenPayload;
+};
