@@ -1,4 +1,5 @@
 import dishApiRequest from "@/apiRequests/dish";
+import { DishStatus } from "@/constants/type";
 import { formatCurrency } from "@/lib/utils";
 import { DishListResType } from "@/schemaValidations/dish.schema";
 import Image from "next/image";
@@ -41,7 +42,7 @@ export default async function Home() {
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2">
           {dishList.map(
             (item) =>
-              item.status !== "Hidden" && (
+              item.status !== DishStatus.Hidden && (
                 <div className="w flex gap-4" key={item.id}>
                   <div className="flex-shrink-0">
                     <Image
@@ -56,7 +57,7 @@ export default async function Home() {
                   <div className="space-y-1">
                     <h3 className="text-xl font-semibold">{item.name}</h3>
                     <p className="">{item.description}</p>
-                    <p className="font-semibold">
+                    <p className="font-semibold text-orange-600">
                       {formatCurrency(item.price)} VNĐ
                     </p>
                   </div>
