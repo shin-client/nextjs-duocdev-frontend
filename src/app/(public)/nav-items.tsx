@@ -1,4 +1,16 @@
 "use client";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useAppContext } from "@/components/app-provider";
 import { Role } from "@/constants/type";
 import { cn, handleErrorApi } from "@/lib/utils";
@@ -82,9 +94,26 @@ export default function NavItems({ className }: { className?: string }) {
         ))}
 
       {role && (
-        <span className={cn(className, "cursor-pointer")} onClick={logout}>
-          Đăng xuất
-        </span>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <span className={cn(className, "cursor-pointer")}>Đăng xuất</span>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                Bạn có chắc chắn muốn đăng xuất?
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                Nếu bạn đang gọi món thì có thể mất làm mất thông tin các món
+                bạn đang gọi và hoá đơn thanh toán!
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Huỷ</AlertDialogCancel>
+              <AlertDialogAction onClick={logout}>Đăng xuất</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       )}
     </>
   );

@@ -1,17 +1,58 @@
 "use client";
 
 import { OrderStatus } from "@/constants/type";
+import socket from "@/lib/socket";
 import { formatCurrency, getVietnameseOrderStatus } from "@/lib/utils";
 import { useGuestGetOrders } from "@/queries/useGuest";
+import { UpdateOrderResType } from "@/schemaValidations/order.schema";
 import Image from "next/image";
+import { useEffect } from "react";
+import { toast } from "sonner";
 
 const OrdersCart = () => {
-  const { data } = useGuestGetOrders();
+  const { data, refetch } = useGuestGetOrders();
   const orders = data?.payload.data ?? [];
 
   const totalPrice = orders.reduce((sum, order) => {
     return sum + (order?.dishSnapshot.price ?? 0) * order.quantity;
   }, 0);
+
+  useEffect(() => {
+    if (socket.connected) {
+      onConnect();
+    }
+
+    function onConnect() {
+      console.log(socket.id);
+    }
+
+    function onDisconnect() {
+      console.log("disconnected");
+    }
+
+    function onUpdateOrder(data: UpdateOrderResType["data"]) {
+      const {
+        dishSnapshot: { name },
+        quantity,
+        status,
+      } = data;
+      toast.success(
+        `Món ${name} (SL: ${quantity}) vừa được cập nhật. Trạng Thái: ${getVietnameseOrderStatus(status)}`,
+      );
+      refetch();
+    }
+
+    socket.on("update-order", onUpdateOrder);
+
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+      socket.off("update-order", onUpdateOrder);
+    };
+  }, [refetch]);
 
   return (
     <>
