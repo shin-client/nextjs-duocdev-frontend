@@ -1,14 +1,21 @@
 "use client";
 
-import { GetOrdersResType } from "@/schemaValidations/order.schema";
-import { createContext, use, useState } from "react";
+import {
+  GetOrdersResType,
+  UpdateOrderResType,
+} from "@/schemaValidations/order.schema";
+import { createContext, use, useEffect, useState } from "react";
 import { OrderStatusValues } from "@/constants/type";
 import orderTableColumns from "@/app/manage/orders/order-table-columns";
 import { useOrderService } from "@/app/manage/orders/order.service";
 import OrderDataTable from "./order-data-table";
-import { useGetOrders } from "@/queries/useOrder";
+import { useGetOrders, useUpdateOrder } from "@/queries/useOrder";
 import { endOfDay, startOfDay } from "date-fns";
 import { useTables } from "@/queries/useTable";
+import socket from "@/lib/socket";
+import { toast } from "sonner";
+import { getVietnameseOrderStatus, handleErrorApi } from "@/lib/utils";
+import { GuestCreateOrdersResType } from "@/schemaValidations/guest.schema";
 
 export type StatusCountObject = Record<
   (typeof OrderStatusValues)[number],
@@ -38,7 +45,7 @@ export const OrderTableContext = createContext<{
   resetDateFilter: () => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tableListSortedByNumber: any[];
-  ordersIsLoading: boolean
+  ordersIsLoading: boolean;
 }>({
   setOrderIdEdit: () => {},
   orderIdEdit: undefined,
@@ -50,7 +57,7 @@ export const OrderTableContext = createContext<{
   setToDate: () => {},
   resetDateFilter: () => {},
   tableListSortedByNumber: [],
-  ordersIsLoading: false
+  ordersIsLoading: false,
 });
 
 export const useOrderTableContext = () => {
@@ -69,8 +76,16 @@ export default function OrderTable() {
   const [fromDate, setFromDate] = useState(initFromDate);
   const [toDate, setToDate] = useState(initToDate);
 
-  const { data: orders, isLoading: ordersIsLoading } = useGetOrders({ fromDate, toDate });
+  const {
+    data: orders,
+    isLoading: ordersIsLoading,
+    refetch,
+  } = useGetOrders({
+    fromDate,
+    toDate,
+  });
   const { data: tables } = useTables();
+  const { mutateAsync: updateOrder } = useUpdateOrder();
 
   const orderList = orders?.payload.data ?? [];
   const tableList = tables?.payload.data ?? [];
@@ -88,7 +103,66 @@ export default function OrderTable() {
     dishId: number;
     status: (typeof OrderStatusValues)[number];
     quantity: number;
-  }) => {};
+  }) => {
+    try {
+      await updateOrder(body);
+    } catch (error) {
+      handleErrorApi({ error });
+    }
+  };
+
+  useEffect(() => {
+    if (socket.connected) {
+      onConnect();
+    }
+
+    function onConnect() {
+      console.log(socket.id);
+    }
+
+    function onDisconnect() {
+      console.log("disconnected");
+    }
+
+    function ordersRefetch() {
+      const now = new Date();
+      if (now <= toDate && now >= fromDate) return refetch();
+    }
+
+    function onUpdateOrder(data: UpdateOrderResType["data"]) {
+      const {
+        dishSnapshot: { name },
+        quantity,
+        status,
+      } = data;
+      toast.success(
+        `Món ${name} (SL: ${quantity}) vừa được cập nhật. Trạng Thái: ${getVietnameseOrderStatus(status)}`,
+      );
+      ordersRefetch();
+    }
+
+    function onNewOrder(data: GuestCreateOrdersResType["data"]) {
+      const { guest } = data[0];
+      toast.success(
+        `Khách ${guest?.name} tại bàn ${guest?.tableNumber} vừa gọi ${data.length} món`,
+      );
+      ordersRefetch();
+    }
+
+    socket.on("update-order", onUpdateOrder);
+    socket.on("new-order", onNewOrder);
+
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+
+      socket.off("update-order", onUpdateOrder);
+      socket.off("new-order", onNewOrder);
+    };
+  }, [fromDate, refetch, toDate]);
 
   return (
     <OrderTableContext
@@ -103,7 +177,7 @@ export default function OrderTable() {
         setToDate,
         resetDateFilter,
         tableListSortedByNumber,
-        ordersIsLoading
+        ordersIsLoading,
       }}
     >
       <OrderDataTable columns={orderTableColumns} data={orderList} />

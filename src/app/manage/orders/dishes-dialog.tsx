@@ -93,7 +93,7 @@ export function DishesDialog({
     pageSize: PAGE_SIZE,
   });
 
-  const {data: dishes} = useDishes();
+  const { data: dishes } = useDishes();
   const data = dishes?.payload.data ?? [];
 
   const table = useReactTable({
@@ -135,7 +135,7 @@ export function DishesDialog({
       <DialogTrigger asChild>
         <Button variant="outline">Thay đổi</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="max-h-full overflow-auto sm:max-w-[600px]">
         <DialogDescription className="sr-only" />
         <DialogHeader>
           <DialogTitle>Chọn món ăn</DialogTitle>

@@ -14,8 +14,15 @@ const OrdersCart = () => {
   const orders = data?.payload.data ?? [];
 
   const totalPrice = orders.reduce((sum, order) => {
-    return sum + (order?.dishSnapshot.price ?? 0) * order.quantity;
+    if (!["Rejected", "Paid"].includes(order.status)) {
+      return sum + (order?.dishSnapshot.price ?? 0) * order.quantity;
+    }
+    return sum;
   }, 0);
+
+  const orderItemsCount = orders.filter(order =>
+    !["Rejected", "Paid"].includes(order.status)
+  ).length;
 
   useEffect(() => {
     if (socket.connected) {
@@ -109,7 +116,7 @@ const OrdersCart = () => {
       <div className="bg-primary sticky bottom-3 rounded-lg p-1 shadow-md">
         <div className="flex w-full flex-col items-center justify-between">
           <span className="text-primary-foreground text-sm font-medium">
-            Tổng cộng · {orders.length} món
+            Số tiền thanh toán · {orderItemsCount} món
           </span>
           <span className="text-primary-foreground text-lg font-bold">
             {formatCurrency(totalPrice)} VNĐ
