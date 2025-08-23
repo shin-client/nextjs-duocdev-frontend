@@ -107,7 +107,7 @@ export default function EditTable({
         className="max-h-screen overflow-auto sm:max-w-[600px]"
         onCloseAutoFocus={() => reset()}
       >
-        <DialogDescription className="sr-only"></DialogDescription>
+        <DialogDescription className="sr-only" />
         <DialogHeader>
           <DialogTitle>Cập nhật bàn ăn</DialogTitle>
         </DialogHeader>

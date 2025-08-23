@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DotsHorizontalIcon } from "@radix-ui/react-icons";
+import { CaretSortIcon, DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { ColumnDef } from "@tanstack/react-table";
 import { use } from "react";
 import { TableOverviewContext } from "./table-overview";
@@ -18,7 +18,16 @@ import { TableItem } from "@/constants/type";
 export const columns: ColumnDef<TableItem>[] = [
   {
     accessorKey: "number",
-    header: () => <div className="text-center">Số bàn</div>,
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        className="cursor-pointer w-full"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Số bàn
+        <CaretSortIcon className="h-4 w-4" />
+      </Button>
+    ),
     cell: ({ row }) => (
       <div className="text-center">{row.getValue("number")}</div>
     ),

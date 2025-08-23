@@ -2,6 +2,7 @@
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -85,6 +86,7 @@ export default function AddOrder() {
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-screen overflow-auto sm:max-w-[600px]">
+        <DialogDescription className="sr-only" />
         <DialogHeader>
           <DialogTitle>Tạo đơn hàng</DialogTitle>
         </DialogHeader>

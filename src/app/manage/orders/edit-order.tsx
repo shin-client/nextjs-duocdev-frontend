@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -114,6 +115,7 @@ export default function EditOrder({
       }}
     >
       <DialogContent className="max-h-screen overflow-auto sm:max-w-[600px]">
+        <DialogDescription className="sr-only" />
         <DialogHeader>
           <DialogTitle>Cập nhật đơn hàng</DialogTitle>
         </DialogHeader>

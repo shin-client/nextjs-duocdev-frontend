@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -31,9 +32,7 @@ import {
 import { cn, getVietnameseTableStatus, simpleMatchText } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { TableListResType } from "@/schemaValidations/table.schema";
-import { TableStatus } from "@/constants/type";
-
-type TableItem = TableListResType["data"][0];
+import { TableItem, TableStatus } from "@/constants/type";
 
 export const columns: ColumnDef<TableItem>[] = [
   {
@@ -124,6 +123,7 @@ export function TablesDialog({
         <DialogHeader>
           <DialogTitle>Chọn bàn</DialogTitle>
         </DialogHeader>
+        <DialogDescription className="sr-only" />
         <div>
           <div className="w-full">
             <div className="flex items-center py-4">

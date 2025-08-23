@@ -19,6 +19,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -74,6 +75,7 @@ export default function OrderStatics({
         }}
       >
         <DialogContent className="max-h-full overflow-auto">
+        <DialogDescription className="sr-only" />
           {selectedServingGuest && (
             <DialogHeader>
               <DialogTitle>

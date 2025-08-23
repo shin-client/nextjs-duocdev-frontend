@@ -40,14 +40,13 @@ const DataTable = <TData, TValue>({
 }: DataTableProps<TData, TValue>) => {
   const searchParam = useSearchParams();
 
+  const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [sorting, setSorting] = useState<SortingState>([]);
   const [rowSelection, setRowSelection] = useState({});
 
   const page = searchParam.get("page") ? Number(searchParam.get("page")) : 1;
   const pageIndex = page - 1;
-
   const [pagination, setPagination] = useState({
     pageIndex,
     pageSize: PAGE_SIZE,

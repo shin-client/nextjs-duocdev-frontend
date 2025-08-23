@@ -81,7 +81,7 @@ export default function AddTable() {
         className="max-h-screen overflow-auto sm:max-w-[600px]"
         onCloseAutoFocus={() => form.reset()}
       >
-        <DialogDescription className="sr-only"></DialogDescription>
+        <DialogDescription className="sr-only" />
         <DialogHeader>
           <DialogTitle>Thêm bàn</DialogTitle>
         </DialogHeader>

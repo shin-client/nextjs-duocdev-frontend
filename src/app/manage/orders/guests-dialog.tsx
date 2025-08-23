@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -144,6 +145,7 @@ export default function GuestsDialog({
         <Button variant="outline">Chọn khách</Button>
       </DialogTrigger>
       <DialogContent className="max-h-full overflow-auto sm:max-w-[700px]">
+        <DialogDescription className="sr-only" />
         <DialogHeader>
           <DialogTitle>Chọn khách hàng</DialogTitle>
         </DialogHeader>
