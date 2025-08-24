@@ -31,8 +31,8 @@ import {
 } from "@tanstack/react-table";
 import { cn, getVietnameseTableStatus, simpleMatchText } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { TableListResType } from "@/schemaValidations/table.schema";
 import { TableItem, TableStatus } from "@/constants/type";
+import { useTables } from "@/queries/useTable";
 
 export const columns: ColumnDef<TableItem>[] = [
   {
@@ -70,7 +70,10 @@ export function TablesDialog({
   onChoose: (table: TableItem) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const data: TableListResType["data"] = [];
+
+  const { data: tables } = useTables();
+  const data = tables?.payload.data ?? [];
+
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});

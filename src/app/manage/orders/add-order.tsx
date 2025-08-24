@@ -27,9 +27,12 @@ import GuestsDialog from "@/app/manage/orders/guests-dialog";
 import { CreateOrdersBodyType } from "@/schemaValidations/order.schema";
 import Quantity from "@/app/guest/menu/quantity";
 import Image from "next/image";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn, formatCurrency, handleErrorApi } from "@/lib/utils";
 import { DishStatus } from "@/constants/type";
-import { DishListResType } from "@/schemaValidations/dish.schema";
+import { useDishes } from "@/queries/useDish";
+import { useCreateOrders } from "@/queries/useOrder";
+import { useCreateGuest } from "@/queries/useAccount";
+import { toast } from "sonner";
 
 export default function AddOrder() {
   const [open, setOpen] = useState(false);
@@ -38,15 +41,23 @@ export default function AddOrder() {
   >(null);
   const [isNewGuest, setIsNewGuest] = useState(true);
   const [orders, setOrders] = useState<CreateOrdersBodyType["orders"]>([]);
-  const dishes: DishListResType["data"] = [];
+
+  const { data } = useDishes();
+  const dishes = useMemo(() => data?.payload.data ?? [], [data]);
 
   const totalPrice = useMemo(() => {
-    return dishes.reduce((result, dish) => {
-      const order = orders.find((order) => order.dishId === dish.id);
-      if (!order) return result;
+    const dishMap = new Map(dishes.map((dish) => [dish.id, dish]));
+    return orders.reduce((result, order) => {
+      const dish = dishMap.get(order.dishId);
+      if (!dish) return result;
       return result + order.quantity * dish.price;
     }, 0);
   }, [dishes, orders]);
+
+  const { mutateAsync: createOrders, isPending: createOrdersPending } =
+    useCreateOrders();
+  const { mutateAsync: createGuest, isPending: createGuestPending } =
+    useCreateGuest();
 
   const form = useForm<GuestLoginBodyType>({
     resolver: zodResolver(GuestLoginBody),
@@ -55,6 +66,7 @@ export default function AddOrder() {
       tableNumber: 0,
     },
   });
+
   const name = form.watch("name");
   const tableNumber = form.watch("tableNumber");
 
@@ -73,10 +85,40 @@ export default function AddOrder() {
     });
   };
 
-  const handleOrder = async () => {};
+  const handleOrder = async () => {
+    try {
+      let guestId = selectedGuest?.id;
+      if (isNewGuest) {
+        const guestRes = await createGuest({ name, tableNumber });
+        guestId = guestRes.payload.data.id;
+      }
+      if (!guestId) {
+        toast.error("Vui lòng chọn khách hàng!");
+        return;
+      }
+      await createOrders({ guestId, orders });
+      reset();
+    } catch (error) {
+      handleErrorApi({ error, setError: form.setError });
+    }
+  };
+
+  const reset = () => {
+    form.reset();
+    setSelectedGuest(null);
+    setIsNewGuest(true);
+    setOrders([]);
+    setOpen(false);
+  };
 
   return (
-    <Dialog onOpenChange={setOpen} open={open}>
+    <Dialog
+      onOpenChange={(value) => {
+        if (!value) reset();
+        setOpen(value);
+      }}
+      open={open}
+    >
       <DialogTrigger asChild>
         <Button size="sm" className="h-7 gap-1">
           <PlusCircle className="h-3.5 w-3.5" />
@@ -213,6 +255,7 @@ export default function AddOrder() {
             className="w-full justify-between"
             onClick={handleOrder}
             disabled={orders.length === 0}
+            isLoading={createOrdersPending || createGuestPending}
           >
             <span>Đặt hàng · {orders.length} món</span>
             <span>{formatCurrency(totalPrice)}</span>
