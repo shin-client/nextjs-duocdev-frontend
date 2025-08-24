@@ -3,6 +3,8 @@ import {
   GetOrderDetailResType,
   GetOrdersQueryParamsType,
   GetOrdersResType,
+  PayGuestOrdersBodyType,
+  PayGuestOrdersResType,
   UpdateOrderBodyType,
   UpdateOrderResType,
 } from "@/schemaValidations/order.schema";
@@ -19,6 +21,8 @@ const orderApiRequest = {
     http.get<GetOrderDetailResType>(`${prefix}/${id}`),
   updateOrder: (id: number, body: UpdateOrderBodyType) =>
     http.put<UpdateOrderResType>(`${prefix}/${id}`, body),
+  pay: (body: PayGuestOrdersBodyType) =>
+    http.post<PayGuestOrdersResType>(`${prefix}/pay`, body),
 };
 
 export default orderApiRequest;

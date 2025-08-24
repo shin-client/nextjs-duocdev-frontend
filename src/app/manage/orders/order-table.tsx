@@ -2,6 +2,7 @@
 
 import {
   GetOrdersResType,
+  PayGuestOrdersResType,
   UpdateOrderResType,
 } from "@/schemaValidations/order.schema";
 import { createContext, use, useEffect, useState } from "react";
@@ -149,8 +150,17 @@ export default function OrderTable() {
       ordersRefetch();
     }
 
+    function onPayment(data: PayGuestOrdersResType["data"]) {
+      const { guest } = data[0];
+      toast.success(
+        `Khách ${guest?.name} tại bàn ${guest?.tableNumber} thanh toán thành công ${data.length} món`,
+      );
+      ordersRefetch();
+    }
+
     socket.on("update-order", onUpdateOrder);
     socket.on("new-order", onNewOrder);
+    socket.on("payment", onPayment);
 
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
@@ -161,6 +171,7 @@ export default function OrderTable() {
 
       socket.off("update-order", onUpdateOrder);
       socket.off("new-order", onNewOrder);
+      socket.off("payment", onPayment);
     };
   }, [fromDate, refetch, toDate]);
 

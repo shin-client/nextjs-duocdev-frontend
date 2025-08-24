@@ -25,34 +25,6 @@ import {
 } from "@/components/ui/dialog";
 import OrderGuestDetail from "@/app/manage/orders/order-guest-detail";
 
-// Ví dụ:
-// const statics: Statics = {
-//   status: {
-//     Pending: 1,
-//     Processing: 2,
-//     Delivered: 3,
-//     Paid: 5,
-//     Rejected: 0
-//   },
-//   table: {
-//     1: { // Bàn số 1
-//       20: { // Guest 20
-//         Pending: 1,
-//         Processing: 2,
-//         Delivered: 3,
-//         Paid: 5,
-//         Rejected: 0
-//       },
-//       21: { // Guest 21
-//         Pending: 1,
-//         Processing: 2,
-//         Delivered: 3,
-//         Paid: 5,
-//         Rejected: 0
-//       }
-//     }
-//   }
-// }
 export default function OrderStatics({
   statics,
   tableList,
@@ -75,7 +47,7 @@ export default function OrderStatics({
         }}
       >
         <DialogContent className="max-h-full overflow-auto">
-        <DialogDescription className="sr-only" />
+          <DialogDescription className="sr-only" />
           {selectedServingGuest && (
             <DialogHeader>
               <DialogTitle>
@@ -89,7 +61,11 @@ export default function OrderStatics({
                 const orders = selectedServingGuest[Number(guestId)];
                 return (
                   <div key={guestId}>
-                    <OrderGuestDetail guest={orders[0].guest} orders={orders} />
+                    <OrderGuestDetail
+                      guest={orders[0].guest}
+                      orders={orders}
+                      onPaySuccess={() => setSelectedTableNumber(0)}
+                    />
                     {index !== Object.keys(selectedServingGuest).length - 1 && (
                       <Separator className="my-5" />
                     )}

@@ -4,7 +4,10 @@ import { OrderStatus } from "@/constants/type";
 import socket from "@/lib/socket";
 import { formatCurrency, getVietnameseOrderStatus } from "@/lib/utils";
 import { useGuestGetOrders } from "@/queries/useGuest";
-import { UpdateOrderResType } from "@/schemaValidations/order.schema";
+import {
+  PayGuestOrdersResType,
+  UpdateOrderResType,
+} from "@/schemaValidations/order.schema";
 import Image from "next/image";
 import { useEffect } from "react";
 import { toast } from "sonner";
@@ -20,8 +23,8 @@ const OrdersCart = () => {
     return sum;
   }, 0);
 
-  const orderItemsCount = orders.filter(order =>
-    !["Rejected", "Paid"].includes(order.status)
+  const orderItemsCount = orders.filter(
+    (order) => !["Rejected", "Paid"].includes(order.status),
   ).length;
 
   useEffect(() => {
@@ -49,7 +52,16 @@ const OrdersCart = () => {
       refetch();
     }
 
+    function onPayment(data: PayGuestOrdersResType["data"]) {
+      const { guest } = data[0];
+      toast.success(
+        `Khách ${guest?.name} tại bàn ${guest?.tableNumber} thanh toán thành công ${data.length} món`,
+      );
+      refetch();
+    }
+
     socket.on("update-order", onUpdateOrder);
+    socket.on("payment", onPayment);
 
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
@@ -58,6 +70,7 @@ const OrdersCart = () => {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
       socket.off("update-order", onUpdateOrder);
+      socket.off("payment", onPayment);
     };
   }, [refetch]);
 

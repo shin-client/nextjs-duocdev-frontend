@@ -7,19 +7,27 @@ import {
   formatDateTimeToLocaleString,
   formatDateTimeToTimeString,
   getVietnameseOrderStatus,
+  handleErrorApi,
 } from "@/lib/utils";
-import { GetOrdersResType } from "@/schemaValidations/order.schema";
+import { usePayForGuest } from "@/queries/useOrder";
+import {
+  GetOrdersResType,
+  PayGuestOrdersResType,
+} from "@/schemaValidations/order.schema";
 import Image from "next/image";
 import { Fragment } from "react";
 
 type Guest = GetOrdersResType["data"][0]["guest"];
 type Orders = GetOrdersResType["data"];
+
 export default function OrderGuestDetail({
   guest,
   orders,
+  onPaySuccess,
 }: {
   guest: Guest;
   orders: Orders;
+  onPaySuccess?: (data: PayGuestOrdersResType) => void;
 }) {
   const ordersFilterToPurchase = guest
     ? orders.filter(
@@ -31,6 +39,18 @@ export default function OrderGuestDetail({
   const purchasedOrderFilter = guest
     ? orders.filter((order) => order.status === OrderStatus.Paid)
     : [];
+
+  const { mutateAsync: payForGuest, isPending } = usePayForGuest();
+
+  const pay = async () => {
+    try {
+      const result = await payForGuest({ guestId: guest?.id as number });
+      onPaySuccess?.(result.payload);
+    } catch (error) {
+      handleErrorApi({ error });
+    }
+  };
+
   return (
     <div className="space-y-2 text-sm">
       {guest && (
@@ -146,7 +166,9 @@ export default function OrderGuestDetail({
           className="w-full"
           size={"sm"}
           variant={"secondary"}
+          onClick={pay}
           disabled={ordersFilterToPurchase.length === 0}
+          isLoading={isPending}
         >
           Thanh toán tất cả ({ordersFilterToPurchase.length} đơn)
         </Button>
