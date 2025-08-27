@@ -117,13 +117,9 @@ export default function OrderTable() {
       onConnect();
     }
 
-    function onConnect() {
-      console.log(socket.id);
-    }
+    function onConnect() {}
 
-    function onDisconnect() {
-      console.log("disconnected");
-    }
+    function onDisconnect() {}
 
     function ordersRefetch() {
       const now = new Date();
