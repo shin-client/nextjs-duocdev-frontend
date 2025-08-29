@@ -62,8 +62,8 @@ export const useUpdateAccountMutation = () => {
     }: UpdateEmployeeAccountBodyType & {
       id: number;
     }) => accountApiRequest.updateEmployee(id, body),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["accounts"], exact: true });
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["accounts", variables.id] });
     },
   });
 };
