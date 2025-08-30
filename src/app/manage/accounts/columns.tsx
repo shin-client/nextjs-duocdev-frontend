@@ -39,6 +39,11 @@ export const columns: ColumnDef<AccountType>[] = [
     cell: ({ row }) => <div className="capitalize">{row.getValue("name")}</div>,
   },
   {
+    accessorKey: "role",
+    header: "Vai trò",
+    cell: ({ row }) => <p>{row.getValue("role")}</p>,
+  },
+  {
     accessorKey: "email",
     header: ({ column }) => {
       return (

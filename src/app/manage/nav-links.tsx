@@ -1,11 +1,13 @@
 "use client";
 import menuItems from "@/app/manage/menuItems";
+import { useAppContext } from "@/components/app-provider";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
   TooltipProvider,
 } from "@/components/ui/tooltip";
+import { Role } from "@/constants/type";
 import { cn } from "@/lib/utils";
 import { Package2, Settings } from "lucide-react";
 import Link from "next/link";
@@ -13,6 +15,7 @@ import { usePathname } from "next/navigation";
 
 export default function NavLinks() {
   const pathname = usePathname();
+  const { role } = useAppContext();
 
   return (
     <TooltipProvider>
@@ -26,29 +29,33 @@ export default function NavLinks() {
             <span className="sr-only">Acme Inc</span>
           </Link>
 
-          {menuItems.map((Item, index) => {
-            const isActive = pathname === Item.href;
-            return (
-              <Tooltip key={index}>
-                <TooltipTrigger asChild>
-                  <Link
-                    href={Item.href}
-                    className={cn(
-                      "hover:text-foreground flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8",
-                      {
-                        "bg-accent text-accent-foreground": isActive,
-                        "text-muted-foreground": !isActive,
-                      },
-                    )}
-                  >
-                    <Item.Icon className="h-5 w-5" />
-                    <span className="sr-only">{Item.title}</span>
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right">{Item.title}</TooltipContent>
-              </Tooltip>
-            );
-          })}
+          {menuItems
+            .filter(
+              (item) => role && role !== Role.Guest && item.role.includes(role),
+            )
+            .map((Item, index) => {
+              const isActive = pathname === Item.href;
+              return (
+                <Tooltip key={index}>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href={Item.href}
+                      className={cn(
+                        "hover:text-foreground flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8",
+                        {
+                          "bg-accent text-accent-foreground": isActive,
+                          "text-muted-foreground": !isActive,
+                        },
+                      )}
+                    >
+                      <Item.Icon className="h-5 w-5" />
+                      <span className="sr-only">{Item.title}</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">{Item.title}</TooltipContent>
+                </Tooltip>
+              );
+            })}
         </nav>
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 py-4">
           <Tooltip>

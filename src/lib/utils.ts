@@ -99,8 +99,9 @@ export const checkAndRefreshToken = async (param?: {
     }
 
     if (
-      param?.force || (decodedAccessToken.exp - now <
-      (decodedAccessToken.exp - decodedAccessToken.iat) / 3)
+      param?.force ||
+      decodedAccessToken.exp - now <
+        (decodedAccessToken.exp - decodedAccessToken.iat) / 3
     ) {
       const role = decodedRefreshToken.role;
       const res =

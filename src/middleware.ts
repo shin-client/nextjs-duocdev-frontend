@@ -4,6 +4,7 @@ import { Role } from "./constants/type";
 
 const managePaths = ["/manage"];
 const guestPaths = ["/guest"];
+const onlyOwnerPaths = ["/manage/accounts"];
 const privatePaths = [...managePaths, ...guestPaths];
 const unAuthPaths = ["/login"];
 
@@ -41,9 +42,10 @@ export function middleware(request: NextRequest) {
     const role = decodeToken(refreshToken).role;
 
     const isUnauthorizedAccess = () => {
-      if (role === Role.Guest) {
+      if (role === Role.Guest)
         return managePaths.some((path) => pathname.startsWith(path));
-      }
+      else if (role !== Role.Owner)
+        return onlyOwnerPaths.some((path) => pathname.startsWith(path));
       return guestPaths.some((path) => pathname.startsWith(path));
     };
 
