@@ -10,7 +10,7 @@ import { Suspense, useEffect, useRef } from "react";
 
 const Logout = () => {
   const router = useRouter();
-  const { setRole } = useAppContext();
+  const { setRole, disconnectSocket } = useAppContext();
   const searchParams = useSearchParams();
   const refreshTokenFormUrl = searchParams.get("refreshToken");
   const accessTokenFormUrl = searchParams.get("accessToken");
@@ -38,10 +38,18 @@ const Logout = () => {
       hasExecuted.current = true;
       mutateAsync().then(() => router.push("/login"));
       setRole();
+      disconnectSocket();
     } else {
       router.push("/");
     }
-  }, [accessTokenFormUrl, mutateAsync, refreshTokenFormUrl, router, setRole]);
+  }, [
+    accessTokenFormUrl,
+    disconnectSocket,
+    mutateAsync,
+    refreshTokenFormUrl,
+    router,
+    setRole,
+  ]);
 
   return (
     <div className="flex items-center justify-center">

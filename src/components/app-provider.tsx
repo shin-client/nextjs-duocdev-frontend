@@ -4,11 +4,13 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import RefreshToken from "./refresh-token";
 import { createContext, use, useEffect, useState } from "react";
 import {
+  createSocket,
   decodeToken,
   getAccessTokenFromLocalStorage,
   removeTokensFromLocalStorage,
 } from "@/lib/utils";
 import { RoleType } from "@/types/jwt.types";
+import type { Socket } from "socket.io-client";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -21,6 +23,9 @@ const queryClient = new QueryClient({
 interface AppContextType {
   role: RoleType | undefined;
   setRole: (role?: RoleType | undefined) => void;
+  socket: Socket | undefined;
+  setSocket: (socket: Socket | undefined) => void;
+  disconnectSocket: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -34,6 +39,7 @@ export const useAppContext = () => {
 };
 
 const AppProvider = ({ children }: { children: React.ReactNode }) => {
+  const [socket, setSocket] = useState<Socket | undefined>(undefined);
   const [role, setRoleState] = useState<RoleType | undefined>(undefined);
 
   useEffect(() => {
@@ -41,6 +47,7 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
     if (accessToken) {
       const role = decodeToken(accessToken).role;
       setRoleState(role);
+      setSocket(createSocket(accessToken));
     }
   }, []);
 
@@ -51,9 +58,17 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const disconnectSocket = () => {
+    socket?.disconnect();
+    setSocket(undefined);
+  };
+
   const value: AppContextType = {
     role,
     setRole,
+    socket,
+    setSocket,
+    disconnectSocket,
   };
 
   return (

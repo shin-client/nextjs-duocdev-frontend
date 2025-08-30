@@ -13,10 +13,10 @@ import OrderDataTable from "./order-data-table";
 import { useGetOrders, useUpdateOrder } from "@/queries/useOrder";
 import { endOfDay, startOfDay } from "date-fns";
 import { useTables } from "@/queries/useTable";
-import socket from "@/lib/socket";
 import { toast } from "sonner";
 import { getVietnameseOrderStatus, handleErrorApi } from "@/lib/utils";
 import { GuestCreateOrdersResType } from "@/schemaValidations/guest.schema";
+import { useAppContext } from "@/components/app-provider";
 
 export type StatusCountObject = Record<
   (typeof OrderStatusValues)[number],
@@ -77,6 +77,7 @@ export default function OrderTable() {
   const [fromDate, setFromDate] = useState(initFromDate);
   const [toDate, setToDate] = useState(initToDate);
 
+  const { socket } = useAppContext();
   const {
     data: orders,
     isLoading: ordersIsLoading,
@@ -113,14 +114,6 @@ export default function OrderTable() {
   };
 
   useEffect(() => {
-    if (socket.connected) {
-      onConnect();
-    }
-
-    function onConnect() {}
-
-    function onDisconnect() {}
-
     function ordersRefetch() {
       const now = new Date();
       if (now <= toDate && now >= fromDate) return refetch();
@@ -154,22 +147,16 @@ export default function OrderTable() {
       ordersRefetch();
     }
 
-    socket.on("update-order", onUpdateOrder);
-    socket.on("new-order", onNewOrder);
-    socket.on("payment", onPayment);
-
-    socket.on("connect", onConnect);
-    socket.on("disconnect", onDisconnect);
+    socket?.on("update-order", onUpdateOrder);
+    socket?.on("new-order", onNewOrder);
+    socket?.on("payment", onPayment);
 
     return () => {
-      socket.off("connect", onConnect);
-      socket.off("disconnect", onDisconnect);
-
-      socket.off("update-order", onUpdateOrder);
-      socket.off("new-order", onNewOrder);
-      socket.off("payment", onPayment);
+      socket?.off("update-order", onUpdateOrder);
+      socket?.off("new-order", onNewOrder);
+      socket?.off("payment", onPayment);
     };
-  }, [fromDate, refetch, toDate]);
+  }, [fromDate, refetch, socket, toDate]);
 
   return (
     <OrderTableContext
