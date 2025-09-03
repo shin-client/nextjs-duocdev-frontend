@@ -174,14 +174,18 @@ const request = async <Response>(
   // Đảm bảo logic dưới đây chỉ chạy ở phía client (browser)
   if (isClient) {
     const normalizeUrl = normalizePath(url);
-    if (["api/auth/login", "api/guest/auth/login"].includes(normalizeUrl)) {
-      const { accessToken, refreshToken } = (payload as LoginResType).data;
+    if (
+      ["api/auth/login", "api/guest/auth/login", "api/auth/token"].includes(
+        normalizeUrl,
+      )
+    ) {
+      const { accessToken, refreshToken } =
+        (payload as LoginResType).data ??
+        (payload as { accessToken: string; refreshToken: string });
       setAccessTokenToLocalStorage(accessToken);
       setRefreshTokenToLocalStorage(refreshToken);
     } else if (
-      ["api/auth/logout", "api/guest/auth/logout", "api/auth/token"].includes(
-        normalizeUrl,
-      )
+      ["api/auth/logout", "api/guest/auth/logout"].includes(normalizeUrl)
     ) {
       removeTokensFromLocalStorage();
     }
