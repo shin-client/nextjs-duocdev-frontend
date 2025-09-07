@@ -223,3 +223,15 @@ export const createSocket = (token = getAccessTokenFromLocalStorage()) =>
       Authorization: `Bearer ${token}`,
     },
   });
+
+export const wrapServerApi = async <T>(fn: () => Promise<T>) => {
+  let result: T | undefined = undefined;
+  try {
+    result = await fn();
+  } catch (error: any) {
+    if (error.digest?.includes("NEXT_REDIRECT")) {
+      throw error;
+    }
+  }
+  return result;
+}

@@ -21,6 +21,7 @@ export default async function Home() {
       <section className="relative z-10">
         <span className="absolute top-0 left-0 z-10 h-full w-full bg-black opacity-50"></span>
         <Image
+          priority
           src="/banner.png"
           width={400}
           height={200}
@@ -56,7 +57,7 @@ export default async function Home() {
                   </div>
                   <div className="space-y-1">
                     <h3 className="text-xl font-semibold">{item.name}</h3>
-                    <p className="">{item.description}</p>
+                    <p>{item.description}</p>
                     <p className="font-semibold text-orange-600">
                       {formatCurrency(item.price)} VNĐ
                     </p>

@@ -15,7 +15,6 @@ type CustomOptions = Omit<RequestInit, "method"> & {
 
 const ENTITY_ERROR_STATUS = 422;
 const AUTHENTICATION_ERROR_STATUS = 401;
-const NOTFOUND_ERROR_STATUS = 404;
 
 type EntityErrorPayload = {
   message: string;
@@ -122,10 +121,7 @@ const request = async <Response>(
           payload: EntityErrorPayload;
         },
       );
-    } else if (
-      res.status === AUTHENTICATION_ERROR_STATUS ||
-      res.status === NOTFOUND_ERROR_STATUS
-    ) {
+    } else if (res.status === AUTHENTICATION_ERROR_STATUS) {
       if (isClient) {
         // const locale = Cookies.get('NEXT_LOCALE')
         if (!clientLogoutRequest) {
