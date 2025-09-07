@@ -1,14 +1,14 @@
 "use client";
 
-import { useAppContext } from "@/components/app-provider";
-import { createSocket, decodeToken } from "@/lib/utils";
+import { useAppStore } from "@/components/app-provider";
+import { decodeToken } from "@/lib/utils";
 import { useSetTokenToCookie } from "@/queries/useAuth";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 const OAuthPage = () => {
-  const { setRole, setSocket } = useAppContext();
+  const { setRole, connectSocket } = useAppStore();
   const searchParams = useSearchParams();
   const router = useRouter();
   const count = useRef(0);
@@ -26,7 +26,7 @@ const OAuthPage = () => {
         setTokenToCookie({ accessToken, refreshToken })
           .then(() => {
             setRole(role);
-            setSocket(createSocket(accessToken));
+            connectSocket(accessToken);
             router.push("/manage/dashboard");
           })
           .catch((e) => toast.error(e.message || "Có lỗi xảy ra!"));
@@ -37,11 +37,11 @@ const OAuthPage = () => {
     }
   }, [
     accessToken,
+    connectSocket,
     message,
     refreshToken,
     router,
     setRole,
-    setSocket,
     setTokenToCookie,
   ]);
 

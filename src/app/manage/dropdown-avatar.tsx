@@ -15,12 +15,12 @@ import { useLogout } from "@/queries/useAuth";
 import { handleErrorApi } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useAccountMe } from "@/queries/useAccount";
-import { useAppContext } from "@/components/app-provider";
+import { useAppStore } from "@/components/app-provider";
 
 export default function DropdownAvatar() {
   const { mutateAsync: triggerLogout, isPending } = useLogout();
   const { data } = useAccountMe();
-  const { setRole, disconnectSocket } = useAppContext();
+  const { setRole, disconnectSocket } = useAppStore();
   const account = data?.payload.data;
   const router = useRouter();
 

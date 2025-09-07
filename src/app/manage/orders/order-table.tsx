@@ -16,7 +16,7 @@ import { useTables } from "@/queries/useTable";
 import { toast } from "sonner";
 import { getVietnameseOrderStatus, handleErrorApi } from "@/lib/utils";
 import { GuestCreateOrdersResType } from "@/schemaValidations/guest.schema";
-import { useAppContext } from "@/components/app-provider";
+import { useAppStore } from "@/components/app-provider";
 
 export type StatusCountObject = Record<
   (typeof OrderStatusValues)[number],
@@ -64,7 +64,7 @@ export const OrderTableContext = createContext<{
 export const useOrderTableContext = () => {
   const context = use(OrderTableContext);
   if (context === undefined) {
-    throw new Error("useAppContext must be used within an AppProvider");
+    throw new Error("useOrderTableContext must be used within an AppProvider");
   }
   return context;
 };
@@ -77,7 +77,7 @@ export default function OrderTable() {
   const [fromDate, setFromDate] = useState(initFromDate);
   const [toDate, setToDate] = useState(initToDate);
 
-  const { socket } = useAppContext();
+  const { socket } = useAppStore();
   const {
     data: orders,
     isLoading: ordersIsLoading,

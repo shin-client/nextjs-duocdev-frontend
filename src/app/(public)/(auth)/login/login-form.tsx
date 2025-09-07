@@ -16,10 +16,10 @@ import { LoginBody, LoginBodyType } from "@/schemaValidations/auth.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLogin } from "@/queries/useAuth";
 import { toast } from "sonner";
-import { createSocket, handleErrorApi } from "@/lib/utils";
+import { handleErrorApi } from "@/lib/utils";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
-import { useAppContext } from "@/components/app-provider";
+import { useAppStore } from "@/components/app-provider";
 import envConfig from "@/config";
 import Link from "next/link";
 
@@ -44,7 +44,7 @@ const googleOauthUrl = getOauthGoogleUrl();
 export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { setRole, setSocket } = useAppContext();
+  const { setRole, connectSocket } = useAppStore();
   const clearTokens = searchParams.get("clearTokens");
   const loginMutation = useLogin();
   const form = useForm<LoginBodyType>({
@@ -63,7 +63,7 @@ export default function LoginForm() {
     try {
       const result = await loginMutation.mutateAsync(data);
       setRole(result.payload.data.account.role);
-      setSocket(createSocket(result.payload.data.accessToken));
+      connectSocket(result.payload.data.accessToken);
       toast.success(result.payload.message);
       router.push("/manage/dashboard");
     } catch (error) {

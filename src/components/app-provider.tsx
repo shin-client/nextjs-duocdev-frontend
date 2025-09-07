@@ -3,7 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import RefreshToken from "./refresh-token";
-import { createContext, use, useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
   createSocket,
   decodeToken,
@@ -13,6 +13,7 @@ import {
 import { RoleType } from "@/types/jwt.types";
 import type { Socket } from "socket.io-client";
 import ListenLogoutSocket from "@/components/listen-logout-socket";
+import { create } from "zustand";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,66 +23,58 @@ const queryClient = new QueryClient({
   },
 });
 
-interface AppContextType {
+interface AppStoreState {
   role: RoleType | undefined;
   setRole: (role?: RoleType | undefined) => void;
   socket: Socket | undefined;
   setSocket: (socket: Socket | undefined) => void;
+  connectSocket: (accessToken: string) => void;
   disconnectSocket: () => void;
 }
 
-const AppContext = createContext<AppContextType | undefined>(undefined);
-
-export const useAppContext = () => {
-  const context = use(AppContext);
-  if (context === undefined) {
-    throw new Error("useAppContext must be used within an AppProvider");
-  }
-  return context;
-};
+export const useAppStore = create<AppStoreState>((set, get) => ({
+  bears: 0,
+  role: undefined as RoleType | undefined,
+  setRole: (role?: RoleType | undefined) => {
+    set({ role });
+    if (!role) removeTokensFromLocalStorage();
+  },
+  socket: undefined as Socket | undefined,
+  setSocket: (socket: Socket | undefined) => set({ socket }),
+  connectSocket: (accessToken: string) => {
+    const currentSocket = get().socket;
+    if (currentSocket) {
+      currentSocket.disconnect();
+    }
+    const newSocket = createSocket(accessToken);
+    set({ socket: newSocket });
+  },
+  disconnectSocket: () =>
+    set((state) => {
+      state.socket?.disconnect();
+      return { socket: undefined };
+    }),
+}));
 
 const AppProvider = ({ children }: { children: React.ReactNode }) => {
-  const [socket, setSocket] = useState<Socket | undefined>(undefined);
-  const [role, setRoleState] = useState<RoleType | undefined>(undefined);
+  const { setRole, connectSocket } = useAppStore();
 
   useEffect(() => {
     const accessToken = getAccessTokenFromLocalStorage();
     if (accessToken) {
       const role = decodeToken(accessToken).role;
-      setRoleState(role);
-      setSocket(createSocket(accessToken));
+      setRole(role);
+      connectSocket(accessToken);
     }
-  }, []);
-
-  const setRole = (role?: RoleType | undefined) => {
-    setRoleState(role);
-    if (!role) {
-      removeTokensFromLocalStorage();
-    }
-  };
-
-  const disconnectSocket = () => {
-    socket?.disconnect();
-    setSocket(undefined);
-  };
-
-  const value: AppContextType = {
-    role,
-    setRole,
-    socket,
-    setSocket,
-    disconnectSocket,
-  };
+  }, [connectSocket, setRole]);
 
   return (
-    <AppContext value={value}>
-      <QueryClientProvider client={queryClient}>
-        {children}
-        <RefreshToken />
-        <ListenLogoutSocket />
-        <ReactQueryDevtools initialIsOpen={false} />
-      </QueryClientProvider>
-    </AppContext>
+    <QueryClientProvider client={queryClient}>
+      {children}
+      <RefreshToken />
+      <ListenLogoutSocket />
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   );
 };
 export default AppProvider;

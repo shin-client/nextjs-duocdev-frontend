@@ -1,6 +1,6 @@
 "use client";
 
-import { useAppContext } from "@/components/app-provider";
+import { useAppStore } from "@/components/app-provider";
 import { OrderStatus } from "@/constants/type";
 import { formatCurrency, getVietnameseOrderStatus } from "@/lib/utils";
 import { useGuestGetOrders } from "@/queries/useGuest";
@@ -13,7 +13,7 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 
 const OrdersCart = () => {
-  const { socket } = useAppContext();
+  const { socket } = useAppStore();
 
   const { data, refetch } = useGuestGetOrders();
   const orders = data?.payload.data ?? [];

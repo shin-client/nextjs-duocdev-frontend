@@ -14,15 +14,15 @@ import {
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { useGuestLogin } from "@/queries/useGuest";
-import { useAppContext } from "@/components/app-provider";
-import { createSocket, handleErrorApi } from "@/lib/utils";
+import { useAppStore } from "@/components/app-provider";
+import { handleErrorApi } from "@/lib/utils";
 import { toast } from "sonner";
 
 export default function GuestLoginForm() {
   const searchParams = useSearchParams();
   const params = useParams();
   const router = useRouter();
-  const { setRole, setSocket } = useAppContext();
+  const { setRole, connectSocket } = useAppStore();
 
   const { isPending, mutateAsync: guestLogin } = useGuestLogin();
 
@@ -46,7 +46,7 @@ export default function GuestLoginForm() {
     try {
       const result = await guestLogin(values);
       setRole(result.payload.data.guest.role);
-      setSocket(createSocket(result.payload.data.accessToken));
+      connectSocket(result.payload.data.accessToken);
       toast.success(result.payload.message);
       router.push("/guest/menu");
     } catch (error) {

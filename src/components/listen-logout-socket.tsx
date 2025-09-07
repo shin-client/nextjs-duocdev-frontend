@@ -2,14 +2,14 @@ import { handleErrorApi } from "@/lib/utils";
 import { useLogout } from "@/queries/useAuth";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { useAppContext } from "./app-provider";
+import { useAppStore } from "./app-provider";
 
 const UNAUTHENTICATED_PATH = ["/login", "/register", "/refresh-token"];
 
 const ListenLogoutSocket = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const { socket, setRole, disconnectSocket } = useAppContext();
+  const { socket, setRole, disconnectSocket } = useAppStore();
 
   const { mutateAsync: triggerLogout, isPending } = useLogout();
 
