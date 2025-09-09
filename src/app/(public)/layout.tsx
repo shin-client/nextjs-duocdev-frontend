@@ -13,8 +13,10 @@ import { DarkModeToggle } from "@/components/dark-mode-toggle";
 
 export default function Layout({
   children,
+  modal
 }: Readonly<{
   children: React.ReactNode;
+  modal: React.ReactNode;
 }>) {
   return (
     <div className="container mx-auto flex min-h-screen w-full flex-col">
@@ -62,6 +64,7 @@ export default function Layout({
       </header>
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
         {children}
+        {modal}
       </main>
     </div>
   );

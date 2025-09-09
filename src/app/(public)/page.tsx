@@ -3,6 +3,7 @@ import { DishStatus } from "@/constants/type";
 import { formatCurrency } from "@/lib/utils";
 import { DishListResType } from "@/schemaValidations/dish.schema";
 import Image from "next/image";
+import Link from "next/link";
 
 export default async function Home() {
   let dishList: DishListResType["data"] = [];
@@ -45,7 +46,7 @@ export default async function Home() {
             (item) =>
               item.status !== DishStatus.Hidden && (
                 <div className="w flex gap-4" key={item.id}>
-                  <div className="flex-shrink-0">
+                  <Link href={`/dishes/${item.id}`} className="flex-shrink-0">
                     <Image
                       src={item.image ?? ""}
                       width={150}
@@ -54,7 +55,7 @@ export default async function Home() {
                       className="h-[150px] w-[150px] rounded-md object-cover"
                       alt={item.name}
                     />
-                  </div>
+                  </Link>
                   <div className="space-y-1">
                     <h3 className="text-xl font-semibold">{item.name}</h3>
                     <p>{item.description}</p>
