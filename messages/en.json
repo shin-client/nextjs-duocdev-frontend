@@ -1,5 +1,15 @@
 {
   "HomePage": {
     "title": "Big Boy Restaurant"
+  },
+  "LocaleSwitcher": {
+    "vi": "Vietnamese",
+    "en": "English",
+    "label": "Language"
+  },
+  "ThemeToggle": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
   }
 }

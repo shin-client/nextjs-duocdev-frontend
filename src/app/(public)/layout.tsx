@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/sheet";
 import NavItems from "@/app/(public)/nav-items";
 import { DarkModeToggle } from "@/components/dark-mode-toggle";
+import LocaleSwitcher from "@/components/locale-switcher";
 
 export default function Layout({
   children,
@@ -58,8 +59,9 @@ export default function Layout({
             </nav>
           </SheetContent>
         </Sheet>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center justify-between gap-2">
           <DarkModeToggle />
+          <LocaleSwitcher />
         </div>
       </header>
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">

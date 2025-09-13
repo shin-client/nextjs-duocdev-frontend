@@ -1,5 +1,15 @@
 {
   "HomePage": {
     "title": "Nhà hàng Big Boy"
+  },
+  "LocaleSwitcher": {
+    "vi": "Tiếng Việt",
+    "en": "Tiếng Anh",
+    "label": "Ngôn ngữ"
+  },
+  "ThemeToggle": {
+    "light": "Sáng",
+    "dark": "Tối",
+    "system": "Hệ thống"
   }
 }
