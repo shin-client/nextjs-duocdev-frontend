@@ -1,5 +1,5 @@
 import { HttpError } from "@/lib/http";
-import { decode } from "jsonwebtoken";
+import { decodeJwt } from "jose";
 import { cookies } from "next/headers";
 
 export async function POST(request: Request) {
@@ -11,8 +11,8 @@ export async function POST(request: Request) {
   const cookieStore = await cookies();
 
   try {
-    const decodedAccessToken = decode(accessToken) as { exp: number };
-    const decodedRefreshToken = decode(refreshToken) as { exp: number };
+    const decodedAccessToken = decodeJwt(accessToken) as { exp: number };
+    const decodedRefreshToken = decodeJwt(refreshToken) as { exp: number };
     cookieStore.set({
       name: "accessToken",
       value: accessToken,

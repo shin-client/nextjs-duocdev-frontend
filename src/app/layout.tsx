@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "sonner";
 import AppProvider from "@/components/app-provider";
+import { NextIntlClientProvider, useLocale } from "next-intl";
 
 const roboto = Roboto({
   display: "swap",
@@ -20,8 +21,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = useLocale();
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head />
       <body
         className={`${roboto.className} bg-background min-h-screen antialiased`}
@@ -34,7 +36,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {children}
+            <NextIntlClientProvider>{children}</NextIntlClientProvider>
           </ThemeProvider>
         </AppProvider>
       </body>

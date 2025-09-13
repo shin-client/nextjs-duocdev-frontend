@@ -4,7 +4,6 @@ import { UseFormSetError } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
 import { EntityError } from "./http";
 import { toast } from "sonner";
-import { decode } from "jsonwebtoken";
 import authApiRequest from "@/apiRequests/auth";
 import { DishStatus, OrderStatus, Role, TableStatus } from "@/constants/type";
 import envConfig from "@/config";
@@ -13,6 +12,7 @@ import guestApiRequest from "@/apiRequests/guest";
 import { BookX, CookingPot, HandCoins, Loader, Truck } from "lucide-react";
 import { format } from "date-fns";
 import { io } from "socket.io-client";
+import { decodeJwt } from "jose";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -181,7 +181,7 @@ export const getTableLink = ({
 };
 
 export const decodeToken = (token: string) => {
-  return decode(token) as TokenPayload;
+  return decodeJwt(token) as TokenPayload;
 };
 
 export function removeAccents(str: string) {
@@ -234,4 +234,4 @@ export const wrapServerApi = async <T>(fn: () => Promise<T>) => {
     }
   }
   return result;
-}
+};

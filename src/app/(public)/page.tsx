@@ -2,10 +2,13 @@ import dishApiRequest from "@/apiRequests/dish";
 import { DishStatus } from "@/constants/type";
 import { formatCurrency } from "@/lib/utils";
 import { DishListResType } from "@/schemaValidations/dish.schema";
+import { getTranslations } from "next-intl/server";
 import Image from "next/image";
 import Link from "next/link";
 
 export default async function Home() {
+  const t = await getTranslations("HomePage");
+
   let dishList: DishListResType["data"] = [];
   try {
     const result = await dishApiRequest.list();
@@ -32,7 +35,7 @@ export default async function Home() {
         />
         <div className="relative z-20 px-4 py-10 sm:px-10 md:px-20 md:py-20">
           <h1 className="text-center text-xl font-bold sm:text-2xl md:text-4xl lg:text-5xl">
-            Nhà hàng Big Boy
+            {t("title")}
           </h1>
           <p className="mt-4 text-center text-sm sm:text-base">
             Vị ngon, trọn khoảnh khắc

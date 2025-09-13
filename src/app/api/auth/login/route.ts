@@ -1,7 +1,7 @@
 import authApiRequest from "@/apiRequests/auth";
 import { HttpError } from "@/lib/http";
 import { LoginBodyType } from "@/schemaValidations/auth.schema";
-import { decode } from "jsonwebtoken";
+import { decodeJwt } from "jose";
 import { cookies } from "next/headers";
 
 export async function POST(request: Request) {
@@ -11,8 +11,8 @@ export async function POST(request: Request) {
   try {
     const { payload } = await authApiRequest.sLogin(body);
     const { accessToken, refreshToken } = payload.data;
-    const decodedAccessToken = decode(accessToken) as { exp: number };
-    const decodedRefreshToken = decode(refreshToken) as { exp: number };
+    const decodedAccessToken = decodeJwt(accessToken) as { exp: number };
+    const decodedRefreshToken = decodeJwt(refreshToken) as { exp: number };
     cookieStore.set({
       name: "accessToken",
       value: accessToken,
