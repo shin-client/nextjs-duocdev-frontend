@@ -37,17 +37,19 @@ export default async function RootLayout({
       <body
         className={`${roboto.className} bg-background min-h-screen antialiased`}
       >
-        <AppProvider>
-          <Toaster position="top-center" richColors />
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <NextIntlClientProvider>{children}</NextIntlClientProvider>
-          </ThemeProvider>
-        </AppProvider>
+        <NextIntlClientProvider>
+          <AppProvider>
+            <Toaster position="top-center" richColors />
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              {children}
+            </ThemeProvider>
+          </AppProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

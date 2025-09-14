@@ -8,8 +8,8 @@ import Quantity from "./quantity";
 import { useState } from "react";
 import { GuestCreateOrdersBodyType } from "@/schemaValidations/guest.schema";
 import { useGuestOrder } from "@/queries/useGuest";
-import { useRouter } from "next/navigation";
 import { DishStatus } from "@/constants/type";
+import { useRouter } from "@/i18n/navigation";
 
 const MenuOrder = () => {
   const router = useRouter();

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Menu, Package2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +10,7 @@ import {
 import NavItems from "@/app/[locale]/(public)/nav-items";
 import { DarkModeToggle } from "@/components/dark-mode-toggle";
 import LocaleSwitcher from "@/components/locale-switcher";
+import { Link } from "@/i18n/navigation";
 
 export default function Layout({
   children,

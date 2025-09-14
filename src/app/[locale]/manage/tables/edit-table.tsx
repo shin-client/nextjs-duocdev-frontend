@@ -36,7 +36,7 @@ import {
 } from "@/schemaValidations/table.schema";
 import { TableStatus, TableStatusValues } from "@/constants/type";
 import { Switch } from "@/components/ui/switch";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useTable, useUpdateTable } from "@/queries/useTable";
 import { useEffect } from "react";
 import { toast } from "sonner";

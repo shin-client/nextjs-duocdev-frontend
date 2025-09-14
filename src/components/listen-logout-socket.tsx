@@ -1,8 +1,8 @@
 import { handleErrorApi } from "@/lib/utils";
 import { useLogout } from "@/queries/useAuth";
-import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAppStore } from "./app-provider";
+import { useRouter, usePathname } from "@/i18n/navigation";
 
 const UNAUTHENTICATED_PATH = ["/login", "/register", "/refresh-token"];
 

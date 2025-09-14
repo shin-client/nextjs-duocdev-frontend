@@ -1,7 +1,7 @@
 "use client";
 
 import { checkAndRefreshToken } from "@/lib/utils";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { useEffect } from "react";
 import { useAppStore } from "./app-provider";
 

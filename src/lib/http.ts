@@ -7,7 +7,7 @@ import {
   setRefreshTokenToLocalStorage,
 } from "./utils";
 import { LoginResType } from "@/schemaValidations/auth.schema";
-import { redirect } from "next/navigation";
+import { redirect } from "@/i18n/navigation";
 
 type CustomOptions = Omit<RequestInit, "method"> & {
   baseUrl?: string | undefined;
@@ -151,7 +151,10 @@ const request = async <Response>(
         // Và chúng ta gọi API ở Next.js Server (Route Handler , Server Component) đến Server Backend
         const headers = options?.headers as Record<string, string> | undefined;
         const accessToken = headers?.Authorization?.split("Bearer ")[1];
-        redirect(`/login?accessToken=${accessToken}`);
+        redirect({
+          href: { pathname: `/login`, query: { accessToken: accessToken } },
+          locale: "",
+        });
       }
     } else {
       // Đảm bảo payload là object có message, không phải Response hoặc kiểu khác

@@ -1,11 +1,13 @@
 "use client";
+
 import { useAppStore } from "@/components/app-provider";
+import { useRouter } from "@/i18n/navigation";
 import {
   getAccessTokenFromLocalStorage,
   getRefreshTokenFromLocalStorage,
 } from "@/lib/utils";
 import { useLogout } from "@/queries/useAuth";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef } from "react";
 
 const Logout = () => {

@@ -17,8 +17,7 @@ import { cn, handleErrorApi } from "@/lib/utils";
 import { useLogout } from "@/queries/useAuth";
 import { useGuestLogout } from "@/queries/useGuest";
 import { RoleType } from "@/types/jwt.types";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 
 const menuItems: {
   title: string;

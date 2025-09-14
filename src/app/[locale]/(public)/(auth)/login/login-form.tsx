@@ -17,11 +17,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useLogin } from "@/queries/useAuth";
 import { toast } from "sonner";
 import { handleErrorApi } from "@/lib/utils";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { useAppStore } from "@/components/app-provider";
 import envConfig from "@/config";
-import Link from "next/link";
+import { Link, useRouter } from "@/i18n/navigation";
 
 const getOauthGoogleUrl = () => {
   const rootUrl = "https://accounts.google.com/o/oauth2/v2/auth";
