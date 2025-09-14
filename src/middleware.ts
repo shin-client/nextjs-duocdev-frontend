@@ -2,21 +2,38 @@ import { NextRequest, NextResponse } from "next/server";
 import { Role } from "./constants/type";
 import { decodeJwt } from "jose";
 import { TokenPayload } from "./types/jwt.types";
+import createMiddleware from "next-intl/middleware";
+import { routing } from "./i18n/routing";
 
-const managePaths = ["/manage"];
-const guestPaths = ["/guest"];
-const onlyOwnerPaths = ["/manage/accounts"];
+const managePaths = ["/vi/manage", "/en/manage"];
+const guestPaths = ["/vi/guest", "/en/guest"];
+const onlyOwnerPaths = ["/vi/manage/accounts", "/en/manage/accounts"];
 const privatePaths = [...managePaths, ...guestPaths];
-const unAuthPaths = ["/login"];
+const unAuthPaths = ["/vi/login", "/en/login"];
+const publicRoutes = ["/"];
 
 const decodeToken = (token: string) => {
   return decodeJwt(token) as TokenPayload;
 };
 
-export function middleware(request: NextRequest) {
+const i18nMiddleware = createMiddleware(routing);
+
+const authMiddleware = async (request: NextRequest, response: NextResponse) => {
   const { pathname } = request.nextUrl;
+  const [, locale, ...segments] = pathname.split("/");
+  const basePathname = `/${segments.join("/")}`;
+
+  console.log("basePathname", basePathname);
+  console.log("locale", locale);
+  console.log("segments", segments);
+
   const accessToken = request.cookies.get("accessToken")?.value;
   const refreshToken = request.cookies.get("refreshToken")?.value;
+
+  const isPublicRoute = publicRoutes.includes(basePathname);
+  if (isPublicRoute) {
+    return response;
+  }
 
   // Chưa login thì không cho vào privatePaths
   if (privatePaths.some((path) => pathname.startsWith(path)) && !refreshToken) {
@@ -59,9 +76,25 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  return NextResponse.next();
-}
+  return response;
+};
+
+const middleware = async (request: NextRequest) => {
+  const response = i18nMiddleware(request);
+
+  if (response && !response.ok) {
+    return response;
+  }
+  return await authMiddleware(request, response);
+};
 
 export const config = {
-  matcher: ["/manage/:path*", "/guest/:path*", "/login"],
+  matcher: [
+    // Skip Next.js internals and all static files, unless found in search params
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest|favicon.ico|sitemap.xml|robots.txt)).*)",
+    // Always run for API routes
+    "/(api|trpc)(.*)",
+  ],
 };
+
+export default middleware;
