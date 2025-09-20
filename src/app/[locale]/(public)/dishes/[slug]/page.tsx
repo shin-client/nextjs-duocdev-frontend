@@ -1,9 +1,9 @@
 import dishApiRequest from "@/apiRequests/dish";
-import { wrapServerApi } from "@/lib/utils";
+import { getIdFromSlugUrl, wrapServerApi } from "@/lib/utils";
 import DishDetail from "./dish-detail";
 
 interface Props {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateStaticParams() {
@@ -14,9 +14,10 @@ export async function generateStaticParams() {
 }
 
 const DishPage = async ({ params }: Props) => {
-  const { id } = await params;
+  const { slug } = await params;
+  const id = getIdFromSlugUrl(slug);
 
-  const data = await wrapServerApi(() => dishApiRequest.getDish(Number(id)));
+  const data = await wrapServerApi(() => dishApiRequest.getDish(id));
   const dish = data?.payload.data;
 
   return <DishDetail dish={dish} />;

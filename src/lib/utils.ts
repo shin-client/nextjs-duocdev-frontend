@@ -13,6 +13,7 @@ import { BookX, CookingPot, HandCoins, Loader, Truck } from "lucide-react";
 import { format } from "date-fns";
 import { io } from "socket.io-client";
 import { decodeJwt } from "jose";
+import slugify from "slugify";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -235,3 +236,8 @@ export const wrapServerApi = async <T>(fn: () => Promise<T>) => {
   }
   return result;
 };
+
+export const generateSlugUrl = ({ name, id }: { name: string; id: number }) =>
+  `${slugify(name)}-id.${id}`;
+
+export const getIdFromSlugUrl = (slug: string) => Number(slug.split("id.")[1]);

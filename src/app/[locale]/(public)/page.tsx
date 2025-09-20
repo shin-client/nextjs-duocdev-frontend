@@ -1,7 +1,7 @@
 import dishApiRequest from "@/apiRequests/dish";
 import { DishStatus } from "@/constants/type";
 import { Link } from "@/i18n/navigation";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, generateSlugUrl } from "@/lib/utils";
 import { DishListResType } from "@/schemaValidations/dish.schema";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import Image from "next/image";
@@ -56,7 +56,10 @@ export default async function Home({
             (item) =>
               item.status !== DishStatus.Hidden && (
                 <div className="w flex gap-4" key={item.id}>
-                  <Link href={`/dishes/${item.id}`} className="flex-shrink-0">
+                  <Link
+                    href={`/dishes/${generateSlugUrl({ name: item.name, id: item.id })}`}
+                    className="flex-shrink-0"
+                  >
                     <Image
                       src={item.image ?? ""}
                       width={150}

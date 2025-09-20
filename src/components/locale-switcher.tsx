@@ -27,6 +27,7 @@ export default function LocaleSwitcher() {
   ];
 
   const handleChangeLocale = (value: string) => {
+    // Giữ lại các param eg: ?key=value...
     const paramsObj: Record<string, string> = {};
     searchParams?.forEach((v, k) => {
       paramsObj[k] = v;
