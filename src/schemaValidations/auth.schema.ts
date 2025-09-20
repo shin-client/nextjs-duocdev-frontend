@@ -9,10 +9,7 @@ export const RegisterBody = z
       .min(2, "Tên tối thiểu 2 ký tự")
       .max(50, "Tên tối đa 50 ký tự")
       .nonempty("Tên không được để trống"),
-    email: z
-      .string()
-      .trim()
-      .email("Email không hợp lệ"),
+    email: z.email("Email không hợp lệ"),
     password: z
       .string()
       .min(6, "Mật khẩu tối thiểu 6 ký tự")
@@ -28,7 +25,7 @@ export type RegisterBodyType = z.infer<typeof RegisterBody>;
 
 export const LoginBody = z
   .object({
-    email: z.string().trim().email("Email không hợp lệ"),
+    email: z.email("invalidEmail"),
     password: z
       .string()
       .min(6, "Mật khẩu tối thiểu 6 ký tự")

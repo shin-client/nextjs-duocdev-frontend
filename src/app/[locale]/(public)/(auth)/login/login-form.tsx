@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import SearchParamsLoader, {
   useSearchParamsLoader,
 } from "@/components/search-params-loader";
+import { useTranslations } from "next-intl";
 
 const getOauthGoogleUrl = () => {
   const rootUrl = "https://accounts.google.com/o/oauth2/v2/auth";
@@ -45,6 +47,7 @@ const googleOauthUrl = getOauthGoogleUrl();
 
 export default function LoginForm() {
   const router = useRouter();
+  const errorMessageT = useTranslations("ErrorMessage");
   const { searchParams, setSearchParams } = useSearchParamsLoader();
   const { setRole, connectSocket } = useAppStore();
   const clearTokens = searchParams?.get("clearTokens");
@@ -93,7 +96,7 @@ export default function LoginForm() {
               <FormField
                 control={form.control}
                 name="email"
-                render={({ field }) => (
+                render={({ field, formState: { errors } }) => (
                   <FormItem>
                     <div className="grid gap-2">
                       <Label htmlFor="email">Email</Label>
@@ -104,7 +107,10 @@ export default function LoginForm() {
                         required
                         {...field}
                       />
-                      <FormMessage />
+                      <FormMessage>
+                        {!!errors.email?.message &&
+                          errorMessageT(errors.email.message as any)}
+                      </FormMessage>
                     </div>
                   </FormItem>
                 )}

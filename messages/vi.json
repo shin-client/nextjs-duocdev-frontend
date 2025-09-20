@@ -11,5 +11,9 @@
     "light": "Sáng",
     "dark": "Tối",
     "system": "Hệ thống"
+  },
+  "ErrorMessage": {
+    "invalidEmail": "Email không hợp lệ!",
+    "required": "Không được để trống!"
   }
 }

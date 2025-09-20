@@ -11,5 +11,9 @@
     "light": "Light",
     "dark": "Dark",
     "system": "System"
+  },
+  "ErrorMessage": {
+    "invalidEmail": "Invalid Email!",
+    "required": "This fields is required!"
   }
 }
