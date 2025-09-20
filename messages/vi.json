@@ -15,5 +15,14 @@
   "ErrorMessage": {
     "invalidEmail": "Email không hợp lệ!",
     "required": "Không được để trống!"
+  },
+  "Metadata": {
+    "home": {
+      "default": "Nhà hàng Big Boy",
+      "description": "Nhà hàng đẳng cấp nhất thế giới"
+    },
+    "login": {
+      "title": "Đăng nhập"
+    }
   }
 }

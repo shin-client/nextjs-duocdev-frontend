@@ -10,6 +10,7 @@ const Modal = ({ children }: { children: React.ReactNode }) => {
   const [open, setOpen] = useState(true);
 
   return (
+    // FIXME: khi mở modal thì vẫn giữ nguyên vị trí không bị nhảy đầu trang ở production
     <Dialog
       open={open}
       onOpenChange={(open) => {

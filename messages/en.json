@@ -2,6 +2,9 @@
   "HomePage": {
     "title": "Big Boy Restaurant"
   },
+  "DishPage": {
+    "notFound": "Not Found Dish"
+  },
   "LocaleSwitcher": {
     "vi": "Vietnamese",
     "en": "English",
@@ -14,6 +17,16 @@
   },
   "ErrorMessage": {
     "invalidEmail": "Invalid Email!",
-    "required": "This fields is required!"
+    "required": "This fields is required!",
+    "notFound": "Not Found"
+  },
+  "Metadata": {
+    "home": {
+      "default": "Big Boy Restaurant",
+      "description": "The best restaurant in the world"
+    },
+    "login": {
+      "title": "Login"
+    }
   }
 }

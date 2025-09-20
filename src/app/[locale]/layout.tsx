@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -7,17 +6,30 @@ import AppProvider from "@/components/app-provider";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { Locale } from "@/i18n/config";
 
 const roboto = Roboto({
   display: "swap",
   subsets: ["vietnamese"],
 });
 
-export const metadata: Metadata = {
-  title: "Big Boy Restaurant",
-  description: "The best restaurant in the world",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: Locale }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Metadata" });
+
+  return {
+    title: {
+      template: `%s | ${t("home.default")}`,
+      default: t("home.default"),
+    },
+    description: t("home.description"),
+  };
+}
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
