@@ -2,6 +2,9 @@
   "HomePage": {
     "title": "Nhà hàng Big Boy"
   },
+  "DishPage": {
+    "notFound": "Không tìm thấy món ăn"
+  },
   "LocaleSwitcher": {
     "vi": "Tiếng Việt",
     "en": "Tiếng Anh",
@@ -14,7 +17,8 @@
   },
   "ErrorMessage": {
     "invalidEmail": "Email không hợp lệ!",
-    "required": "Không được để trống!"
+    "required": "Không được để trống!",
+    "notFound": "Không tìm thấy"
   },
   "Metadata": {
     "home": {
