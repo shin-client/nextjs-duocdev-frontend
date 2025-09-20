@@ -32,6 +32,7 @@ const DishDetail = async ({ dish }: Props) => {
             quality={100}
             className="h-full w-full rounded-xl object-cover"
             alt={dish.name}
+            title={dish.name}
           />
 
           <div className="space-y-8">

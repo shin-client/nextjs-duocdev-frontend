@@ -1,16 +1,41 @@
 import dishApiRequest from "@/apiRequests/dish";
+import envConfig from "@/config";
 import { DishStatus } from "@/constants/type";
+import { Locale } from "@/i18n/config";
 import { Link } from "@/i18n/navigation";
 import { formatCurrency, generateSlugUrl } from "@/lib/utils";
 import { DishListResType } from "@/schemaValidations/dish.schema";
+import { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import Image from "next/image";
 
-export default async function Home({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+interface Props {
+  params: Promise<{ slug: string; locale: Locale }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const t = await getTranslations({
+    locale: (await params).locale,
+    namespace: "Metadata",
+  });
+
+  const url = envConfig.NEXT_PUBLIC_URL + `/${(await params).locale}`;
+
+  return {
+    title: t("home.default"),
+    description: t("home.description"),
+    openGraph: {
+      title: t("home.default"),
+      description: t("home.description"),
+      url,
+    },
+    alternates: {
+      canonical: url,
+    },
+  };
+}
+
+export default async function Home({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 

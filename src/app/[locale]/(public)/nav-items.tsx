@@ -88,7 +88,11 @@ export default function NavItems({ className }: { className?: string }) {
           return true;
         })
         .map((item) => (
-          <Link href={item.href} key={item.href} className={className}>
+          <Link
+            href={item.href}
+            key={item.href}
+            className={className}
+          >
             {item.title}
           </Link>
         ))}

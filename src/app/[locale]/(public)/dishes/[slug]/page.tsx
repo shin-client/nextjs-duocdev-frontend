@@ -33,7 +33,7 @@ export async function generateMetadata(
 
   const url =
     envConfig.NEXT_PUBLIC_URL +
-    `${(await params).locale}/dishes/${generateSlugUrl({ name: dish.name, id: dish.id })}`;
+    `/${(await params).locale}/dishes/${generateSlugUrl({ name: dish.name, id: dish.id })}`;
 
   return {
     title: dish.name,
