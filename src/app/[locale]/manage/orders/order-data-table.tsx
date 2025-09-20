@@ -21,7 +21,6 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table";
-import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import AutoPagination from "@/components/auto-pagination";
 import { Button } from "@/components/ui/button";
@@ -46,6 +45,9 @@ import { useOrderTableContext } from "./order-table";
 import { OrderStatusValues } from "@/constants/type";
 import { useOrderService } from "./order.service";
 import TableSkeleton from "./table-skeleton";
+import SearchParamsLoader, {
+  useSearchParamsLoader,
+} from "@/components/search-params-loader";
 
 interface OrderDataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -58,7 +60,7 @@ const OrderDataTable = <TData, TValue>({
   columns,
   data,
 }: OrderDataTableProps<TData, TValue>) => {
-  const searchParam = useSearchParams();
+  const { searchParams, setSearchParams } = useSearchParamsLoader();
   const {
     orderIdEdit,
     setOrderIdEdit,
@@ -81,7 +83,9 @@ const OrderDataTable = <TData, TValue>({
 
   const [openStatusFilter, setOpenStatusFilter] = useState(false);
 
-  const page = searchParam.get("page") ? Number(searchParam.get("page")) : 1;
+  const page = searchParams?.get("page")
+    ? Number(searchParams?.get("page"))
+    : 1;
   const pageIndex = page - 1;
   const [pagination, setPagination] = useState({
     pageIndex,
@@ -119,6 +123,7 @@ const OrderDataTable = <TData, TValue>({
 
   return (
     <div className="w-full">
+      <SearchParamsLoader onParamsReceived={setSearchParams} />
       <EditOrder
         id={orderIdEdit}
         setId={setOrderIdEdit}

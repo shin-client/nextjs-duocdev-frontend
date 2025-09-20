@@ -1,19 +1,20 @@
 "use client";
 
-import LoadingFallback from "@/components/loading-fallback";
+import SearchParamsLoader, {
+  useSearchParamsLoader,
+} from "@/components/search-params-loader";
 import { useRouter } from "@/i18n/navigation";
 import {
   checkAndRefreshToken,
   getRefreshTokenFromLocalStorage,
 } from "@/lib/utils";
-import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect } from "react";
+import { useEffect } from "react";
 
-const RefreshToken = () => {
+const RefreshTokenPage = () => {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const refreshTokenFormUrl = searchParams.get("refreshToken");
-  const redirectPathname = searchParams.get("redirect");
+  const { searchParams, setSearchParams } = useSearchParamsLoader();
+  const refreshTokenFormUrl = searchParams?.get("refreshToken");
+  const redirectPathname = searchParams?.get("redirect");
 
   useEffect(() => {
     if (
@@ -30,20 +31,10 @@ const RefreshToken = () => {
 
   return (
     <div className="flex items-center justify-center">
+      <SearchParamsLoader onParamsReceived={setSearchParams} />
       <div>Đang làm mới token...</div>
     </div>
   );
 };
 
-const RefreshTokenPage = () => {
-  return (
-    <Suspense
-      fallback={
-        <LoadingFallback />
-      }
-    >
-      <RefreshToken />
-    </Suspense>
-  );
-};
 export default RefreshTokenPage;

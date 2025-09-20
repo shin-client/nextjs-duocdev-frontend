@@ -21,11 +21,13 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table";
-import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import AutoPagination from "@/components/auto-pagination";
 import { Button } from "@/components/ui/button";
 import AddEmployee from "./add-employee";
+import SearchParamsLoader, {
+  useSearchParamsLoader,
+} from "@/components/search-params-loader";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -38,14 +40,16 @@ const DataTable = <TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) => {
-  const searchParam = useSearchParams();
+  const { searchParams, setSearchParams } = useSearchParamsLoader();
 
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [sorting, setSorting] = useState<SortingState>([]);
   const [rowSelection, setRowSelection] = useState({});
 
-  const page = searchParam.get("page") ? Number(searchParam.get("page")) : 1;
+  const page = searchParams?.get("page")
+    ? Number(searchParams?.get("page"))
+    : 1;
   const pageIndex = page - 1;
 
   const [pagination, setPagination] = useState({
@@ -84,6 +88,7 @@ const DataTable = <TData, TValue>({
 
   return (
     <div>
+      <SearchParamsLoader onParamsReceived={setSearchParams} />
       <div className="flex items-center py-4">
         <Input
           placeholder="Filter emails..."

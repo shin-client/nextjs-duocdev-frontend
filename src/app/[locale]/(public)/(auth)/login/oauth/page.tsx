@@ -4,19 +4,21 @@ import { useAppStore } from "@/components/app-provider";
 import { useRouter } from "@/i18n/navigation";
 import { decodeToken } from "@/lib/utils";
 import { useSetTokenToCookie } from "@/queries/useAuth";
-import { useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
+import SearchParamsLoader, {
+  useSearchParamsLoader,
+} from "@/components/search-params-loader";
 
 const OAuthPage = () => {
   const { setRole, connectSocket } = useAppStore();
-  const searchParams = useSearchParams();
+  const { searchParams, setSearchParams } = useSearchParamsLoader();
   const router = useRouter();
   const count = useRef(0);
 
-  const accessToken = searchParams.get("accessToken");
-  const refreshToken = searchParams.get("refreshToken");
-  const message = searchParams.get("message");
+  const accessToken = searchParams?.get("accessToken");
+  const refreshToken = searchParams?.get("refreshToken");
+  const message = searchParams?.get("message");
 
   const { mutateAsync: setTokenToCookie } = useSetTokenToCookie();
 
@@ -46,6 +48,6 @@ const OAuthPage = () => {
     setTokenToCookie,
   ]);
 
-  return null;
+  return <SearchParamsLoader onParamsReceived={setSearchParams} />;
 };
 export default OAuthPage;

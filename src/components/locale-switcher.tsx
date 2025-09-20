@@ -10,14 +10,16 @@ import { useLocale, useTranslations } from "next-intl";
 import { Check, Languages } from "lucide-react";
 import { Button } from "./ui/button";
 import { usePathname, useRouter } from "@/i18n/navigation";
-import { useSearchParams } from "next/navigation";
+import SearchParamsLoader, {
+  useSearchParamsLoader,
+} from "@/components/search-params-loader";
 
 export default function LocaleSwitcher() {
   const t = useTranslations("LocaleSwitcher");
   const router = useRouter();
   const locale = useLocale();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const { searchParams, setSearchParams } = useSearchParamsLoader();
 
   const items = [
     { value: "en", label: t("en") },
@@ -26,7 +28,7 @@ export default function LocaleSwitcher() {
 
   const handleChangeLocale = (value: string) => {
     const paramsObj: Record<string, string> = {};
-    searchParams.forEach((v, k) => {
+    searchParams?.forEach((v, k) => {
       paramsObj[k] = v;
     });
     router.replace({ pathname, query: paramsObj }, { locale: value });
@@ -34,6 +36,7 @@ export default function LocaleSwitcher() {
 
   return (
     <DropdownMenu>
+      <SearchParamsLoader onParamsReceived={setSearchParams} />
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon">
           <Languages />

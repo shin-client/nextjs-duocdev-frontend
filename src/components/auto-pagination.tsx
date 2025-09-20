@@ -8,9 +8,11 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
-import { useSearchParams } from "next/navigation";
 import { Button } from "./ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import SearchParamsLoader, {
+  useSearchParamsLoader,
+} from "@/components/search-params-loader";
 
 interface Props {
   page: number;
@@ -28,10 +30,10 @@ export default function AutoPagination({
   isLink = true,
   onClick = () => {},
 }: Props) {
-  const searchParams = useSearchParams();
+  const { searchParams, setSearchParams } = useSearchParamsLoader();
 
   const createPageUrl = (pageNumber: number) => {
-    const params = new URLSearchParams(searchParams);
+    const params = new URLSearchParams(searchParams ?? "");
     params.set("page", pageNumber.toString());
     return `${pathname}?${params.toString()}`;
   };
@@ -120,6 +122,7 @@ export default function AutoPagination({
 
   return (
     <Pagination>
+      <SearchParamsLoader onParamsReceived={setSearchParams} />
       <PaginationContent>
         <PaginationItem>
           {isLink ? (

@@ -1,3 +1,4 @@
+import { defaultLocale } from "@/i18n/config";
 import Layout from "../(public)/layout";
 
 export default function GuestLayout({
@@ -5,5 +6,9 @@ export default function GuestLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <Layout modal={null}>{children}</Layout>;
+  return (
+    <Layout modal={null} params={Promise.resolve({ locale: defaultLocale })}>
+      {children}
+    </Layout>
+  );
 }

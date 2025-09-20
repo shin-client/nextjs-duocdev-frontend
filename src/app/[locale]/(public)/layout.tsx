@@ -11,14 +11,21 @@ import NavItems from "@/app/[locale]/(public)/nav-items";
 import { DarkModeToggle } from "@/components/dark-mode-toggle";
 import LocaleSwitcher from "@/components/locale-switcher";
 import { Link } from "@/i18n/navigation";
+import { use } from "react";
+import { setRequestLocale } from "next-intl/server";
 
 export default function Layout({
   children,
-  modal
+  modal,
+  params,
 }: Readonly<{
   children: React.ReactNode;
   modal: React.ReactNode;
+  params: Promise<{ locale: string }>;
 }>) {
+  const { locale } = use(params);
+  setRequestLocale(locale);
+
   return (
     <div className="container mx-auto flex min-h-screen w-full flex-col">
       <header className="bg-background sticky top-0 z-20 flex h-16 items-center gap-4 border-b px-4 md:px-6">

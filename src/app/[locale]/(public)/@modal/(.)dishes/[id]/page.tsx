@@ -7,6 +7,11 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
+export async function generateStaticParams() {
+  const res = await dishApiRequest.list();
+  return res.payload.data.map((dish) => ({ dish }));
+}
+
 const DishPage = async ({ params }: Props) => {
   const { id } = await params;
 

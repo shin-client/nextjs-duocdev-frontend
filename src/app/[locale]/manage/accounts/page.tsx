@@ -7,7 +7,6 @@ import {
 } from "@/components/ui/card";
 
 import AccountTable from "@/app/[locale]/manage/accounts/account-table";
-import { Suspense } from "react";
 
 export default function AccountsPage() {
   return (
@@ -19,9 +18,7 @@ export default function AccountsPage() {
             <CardDescription>Quản lý tài khoản nhân viên</CardDescription>
           </CardHeader>
           <CardContent>
-            <Suspense>
-              <AccountTable />
-            </Suspense>
+            <AccountTable />
           </CardContent>
         </Card>
       </div>

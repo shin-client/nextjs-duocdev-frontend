@@ -6,7 +6,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import TableOverview from "@/app/[locale]/manage/tables/table-overview";
-import { Suspense } from "react";
 
 export default function TablesPage() {
   return (
@@ -18,9 +17,7 @@ export default function TablesPage() {
             <CardDescription>Quản lý bàn ăn</CardDescription>
           </CardHeader>
           <CardContent>
-            <Suspense>
-              <TableOverview />
-            </Suspense>
+            <TableOverview />
           </CardContent>
         </Card>
       </div>

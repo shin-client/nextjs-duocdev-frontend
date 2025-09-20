@@ -1,21 +1,23 @@
 "use client";
 
 import { useAppStore } from "@/components/app-provider";
+import SearchParamsLoader, {
+  useSearchParamsLoader,
+} from "@/components/search-params-loader";
 import { useRouter } from "@/i18n/navigation";
 import {
   getAccessTokenFromLocalStorage,
   getRefreshTokenFromLocalStorage,
 } from "@/lib/utils";
 import { useLogout } from "@/queries/useAuth";
-import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
-const Logout = () => {
+const LogoutPage = () => {
   const router = useRouter();
   const { setRole, disconnectSocket } = useAppStore();
-  const searchParams = useSearchParams();
-  const refreshTokenFormUrl = searchParams.get("refreshToken");
-  const accessTokenFormUrl = searchParams.get("accessToken");
+  const { searchParams, setSearchParams } = useSearchParamsLoader();
+  const refreshTokenFormUrl = searchParams?.get("refreshToken");
+  const accessTokenFormUrl = searchParams?.get("accessToken");
   const hasExecuted = useRef(false);
   const { mutateAsync } = useLogout();
 
@@ -55,16 +57,10 @@ const Logout = () => {
 
   return (
     <div className="flex items-center justify-center">
+      <SearchParamsLoader onParamsReceived={setSearchParams} />
       <div>Đang đăng xuất...</div>
     </div>
   );
 };
 
-const LogoutPage = () => {
-  return (
-    <Suspense>
-      <Logout />
-    </Suspense>
-  );
-};
 export default LogoutPage;
